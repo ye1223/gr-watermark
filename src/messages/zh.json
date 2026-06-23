@@ -22,11 +22,8 @@
     "photoSubtitle": "副标题",
     "subtitlePlaceholder": "photo by ...",
     "borderTone": "边框颜色",
-    "cropPosition": "裁切位置",
-    "cropZoom": "裁切缩放",
-    "horizontal": "水平",
-    "vertical": "垂直",
-    "resetCrop": "重置",
+    "cropPreview": "裁切预览",
+    "done": "完成",
     "white": "白底",
     "black": "黑底"
   },

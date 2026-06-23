@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 import type { WatermarkSettings } from "@/types/watermark";
 import { AdvancedSettings } from "./AdvancedSettings";
-import { CropControls } from "./CropControls";
 import { FrameStyleSelect } from "./FrameStyleSelect";
 import { RatioSelect } from "./RatioSelect";
 import { WatermarkToggle } from "./WatermarkToggle";
@@ -37,7 +36,6 @@ export function ConfigPanel({
             updateSettings({ outputRatio, cropZoom: 1, cropX: 0, cropY: 0 })
           }
         />
-        <CropControls settings={settings} updateSettings={updateSettings} />
         <WatermarkToggle
           checked={settings.watermark}
           label={t("watermarkOverlay")}

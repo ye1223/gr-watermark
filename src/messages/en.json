@@ -22,11 +22,8 @@
     "photoSubtitle": "Subtitle",
     "subtitlePlaceholder": "photo by ...",
     "borderTone": "Border color",
-    "cropPosition": "Crop position",
-    "cropZoom": "Crop zoom",
-    "horizontal": "Horizontal",
-    "vertical": "Vertical",
-    "resetCrop": "Reset",
+    "cropPreview": "Crop preview",
+    "done": "Done",
     "white": "White",
     "black": "Black"
   },
