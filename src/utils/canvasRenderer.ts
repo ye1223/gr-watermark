@@ -26,10 +26,6 @@ function fitFont(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, 
   return next;
 }
 
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value));
-}
-
 export async function loadImageElement(src: string) {
   const image = new Image();
   image.crossOrigin = "anonymous";
@@ -91,8 +87,8 @@ export function drawWatermarkCanvas({
   const barY = topBorder + baseHeight;
   const padX = Math.max(24, outputWidth * 0.05);
   const gap = Math.max(12, outputWidth * 0.018);
-  const logoMaxWidth = Math.min(outputWidth * 0.16, 180);
-  const logoHeight = clamp(bottomBorder * 0.28, 16, 32);
+  const logoMaxWidth = outputWidth * 0.18;
+  const logoHeight = Math.max(18, bottomBorder * 0.3);
   const logoRatio = logo ? logo.naturalWidth / logo.naturalHeight : 4.8;
   const logoDrawWidth = Math.min(logoMaxWidth, logoHeight * logoRatio);
   const logoCenterX = outputWidth * 0.57;
@@ -109,15 +105,15 @@ export function drawWatermarkCanvas({
   const title = settings.showModel ? settings.model || brand.defaultModel : "";
   const date = settings.showDate ? settings.date : "";
   const subtitle = settings.showSubtitle ? settings.subtitle : "";
-  const titleSize = fitFont(ctx, title || " ", leftWidth, clamp(bottomBorder * 0.18, 13, 24), 650);
-  const smallSize = clamp(bottomBorder * 0.125, 9, 15);
+  const titleSize = fitFont(ctx, title || " ", leftWidth, Math.max(14, bottomBorder * 0.22), 650);
+  const smallSize = Math.max(10, bottomBorder * 0.13);
   const rightSize = fitFont(
     ctx,
     [settings.focalLength, settings.aperture, settings.shutter, settings.iso ? `ISO${settings.iso}` : ""]
       .filter(Boolean)
       .join(" "),
     rightWidth,
-    clamp(bottomBorder * 0.18, 13, 24),
+    Math.max(14, bottomBorder * 0.22),
     650
   );
 
