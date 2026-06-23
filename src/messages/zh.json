@@ -1,0 +1,54 @@
+{
+  "header": {
+    "title": "GR Watermark",
+    "theme": "主题",
+    "language": "语言"
+  },
+  "upload": {
+    "hint": "点击或拖拽上传图片",
+    "formats": "支持 JPG / PNG / WEBP / HEIC"
+  },
+  "config": {
+    "title": "控制面板",
+    "subtitle": "配置输出参数",
+    "frameStyle": "边框样式",
+    "outputRatio": "输出比例",
+    "watermarkOverlay": "水印叠加",
+    "advancedSettings": "高级设置",
+    "brandLogo": "品牌_LOGO",
+    "cameraModel": "相机型号",
+    "exifData": "EXIF 数据",
+    "datetime": "日期时间",
+    "photoSubtitle": "副标题",
+    "subtitlePlaceholder": "photo by ...",
+    "borderTone": "边框颜色",
+    "cropPosition": "裁切位置",
+    "cropZoom": "裁切缩放",
+    "horizontal": "水平",
+    "vertical": "垂直",
+    "resetCrop": "重置",
+    "white": "白底",
+    "black": "黑底"
+  },
+  "actions": {
+    "clear": "清除",
+    "download": "下载",
+    "copy": "复制",
+    "share": "分享"
+  },
+  "presets": {
+    "ORIGINAL": "原始尺寸",
+    "CLASSIC": "CLASSIC",
+    "MINIMAL": "MINIMAL",
+    "INSTAX": "INSTAX",
+    "POLAROID": "POLAROID"
+  },
+  "ratio": {
+    "ORIGINAL": "ORIGINAL",
+    "1:1": "1:1",
+    "3:4": "3:4",
+    "4:3": "4:3",
+    "16:9": "16:9",
+    "9:16": "9:16"
+  }
+}

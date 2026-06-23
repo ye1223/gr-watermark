@@ -1,0 +1,54 @@
+{
+  "header": {
+    "title": "GR Watermark",
+    "theme": "Theme",
+    "language": "Language"
+  },
+  "upload": {
+    "hint": "Click or drag to upload",
+    "formats": "JPG / PNG / WEBP / HEIC supported"
+  },
+  "config": {
+    "title": "Control Panel",
+    "subtitle": "Output settings",
+    "frameStyle": "Frame style",
+    "outputRatio": "Output ratio",
+    "watermarkOverlay": "Watermark overlay",
+    "advancedSettings": "Advanced settings",
+    "brandLogo": "Brand_LOGO",
+    "cameraModel": "Camera model",
+    "exifData": "EXIF data",
+    "datetime": "Date time",
+    "photoSubtitle": "Subtitle",
+    "subtitlePlaceholder": "photo by ...",
+    "borderTone": "Border color",
+    "cropPosition": "Crop position",
+    "cropZoom": "Crop zoom",
+    "horizontal": "Horizontal",
+    "vertical": "Vertical",
+    "resetCrop": "Reset",
+    "white": "White",
+    "black": "Black"
+  },
+  "actions": {
+    "clear": "Clear",
+    "download": "Download",
+    "copy": "Copy",
+    "share": "Share"
+  },
+  "presets": {
+    "ORIGINAL": "ORIGINAL SIZE",
+    "CLASSIC": "CLASSIC",
+    "MINIMAL": "MINIMAL",
+    "INSTAX": "INSTAX",
+    "POLAROID": "POLAROID"
+  },
+  "ratio": {
+    "ORIGINAL": "ORIGINAL",
+    "1:1": "1:1",
+    "3:4": "3:4",
+    "4:3": "4:3",
+    "16:9": "16:9",
+    "9:16": "9:16"
+  }
+}
