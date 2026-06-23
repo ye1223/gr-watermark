@@ -19,7 +19,17 @@ export async function writeExifToJpeg(exportedBlob: Blob, sourceFile: File) {
       blobToDataUrl(exportedBlob),
       blobToDataUrl(sourceFile),
     ]);
-    const exif = piexif.dump(piexif.load(sourceDataUrl));
+    const sourceExif = piexif.load(sourceDataUrl);
+
+    // Canvas exports pixels in display orientation, so keep metadata but reset orientation
+    // to avoid image viewers rotating the exported JPEG a second time.
+    sourceExif["0th"] = sourceExif["0th"] || {};
+    sourceExif["0th"][piexif.ImageIFD.Orientation] = 1;
+    if (sourceExif["1st"]) {
+      sourceExif["1st"][piexif.ImageIFD.Orientation] = 1;
+    }
+
+    const exif = piexif.dump(sourceExif);
     const inserted = piexif.insert(exif, exportedDataUrl);
     return await (await fetch(inserted)).blob();
   } catch {
