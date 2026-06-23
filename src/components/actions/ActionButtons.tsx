@@ -1,6 +1,6 @@
 "use client";
 
-import { Clipboard, Download, Share2, Trash2 } from "lucide-react";
+import { Download, Share2, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { getBrand } from "@/brands.config";
@@ -20,12 +20,10 @@ export function ActionButtons({
 }) {
   const t = useTranslations("actions");
   const [canShare, setCanShare] = useState(false);
-  const [canCopy, setCanCopy] = useState(false);
-  const [busy, setBusy] = useState<"download" | "copy" | "share" | null>(null);
+  const [busy, setBusy] = useState<"download" | "share" | null>(null);
 
   useEffect(() => {
     setCanShare(typeof navigator !== "undefined" && "share" in navigator && window.isSecureContext);
-    setCanCopy(typeof ClipboardItem !== "undefined" && navigator.clipboard && window.isSecureContext);
   }, []);
 
   async function createOutputBlob() {
@@ -54,21 +52,6 @@ export function ActionButtons({
     }
   }
 
-  async function copy() {
-    setBusy("copy");
-    try {
-      const blob = await createOutputBlob();
-      if (!blob || !canCopy) return;
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          [blob.type]: blob,
-        }),
-      ]);
-    } finally {
-      setBusy(null);
-    }
-  }
-
   async function share() {
     setBusy("share");
     try {
@@ -91,7 +74,6 @@ export function ActionButtons({
   const items = [
     { key: "clear", icon: Trash2, label: t("clear"), onClick: onClear, show: true },
     { key: "download", icon: Download, label: t("download"), onClick: download, show: true },
-    { key: "copy", icon: Clipboard, label: t("copy"), onClick: copy, show: canCopy },
     { key: "share", icon: Share2, label: t("share"), onClick: share, show: canShare },
   ];
 
@@ -99,7 +81,7 @@ export function ActionButtons({
 
   return (
     <div
-      className="grid border-t bg-card/95 p-2 backdrop-blur md:absolute md:bottom-4 md:left-1/2 md:w-auto md:-translate-x-1/2 md:grid-cols-none md:grid-flow-col md:rounded-xl md:border md:shadow-lg"
+      className="grid border-t bg-card/95 p-2 md:flex md:items-center md:justify-center md:gap-2"
       style={{ gridTemplateColumns: `repeat(${visibleItems.length}, minmax(0, 1fr))` }}
     >
       {visibleItems.map((item) => (
@@ -107,10 +89,10 @@ export function ActionButtons({
             key={item.key}
             className="h-9 rounded-lg px-3 text-xs md:w-24"
             disabled={disabled && item.key !== "clear"}
-            variant={item.key === "download" ? "default" : item.key === "clear" ? "destructive" : "ghost"}
+            variant={item.key === "download" ? "secondary" : "ghost"}
             onClick={item.onClick}
           >
-            <item.icon className="mr-1 size-3.5" />
+            <item.icon className={item.key === "download" ? "mr-1 size-3.5 text-primary" : "mr-1 size-3.5"} />
             {busy === item.key ? "..." : item.label}
           </Button>
       ))}

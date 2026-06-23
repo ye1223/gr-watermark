@@ -6,7 +6,7 @@
   },
   "upload": {
     "hint": "上传照片",
-    "formats": "拖拽到此处或点击选择 JPG / PNG / WEBP / HEIC"
+    "formats": "拖拽、粘贴或点击选择 JPG / PNG / WEBP / HEIC"
   },
   "preview": {
     "title": "画布预览"
@@ -39,7 +39,6 @@
   "actions": {
     "clear": "清除",
     "download": "下载",
-    "copy": "复制",
     "share": "分享"
   },
   "presets": {

@@ -6,7 +6,7 @@
   },
   "upload": {
     "hint": "Upload photo",
-    "formats": "Drop here or choose JPG / PNG / WEBP / HEIC"
+    "formats": "Drop, paste, or choose JPG / PNG / WEBP / HEIC"
   },
   "preview": {
     "title": "Canvas preview"
@@ -39,7 +39,6 @@
   "actions": {
     "clear": "Clear",
     "download": "Download",
-    "copy": "Copy",
     "share": "Share"
   },
   "presets": {

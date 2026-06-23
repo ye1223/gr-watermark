@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ConfigPanel } from "@/components/config/ConfigPanel";
 import { Header } from "@/components/layout/Header";
 import { WatermarkPreview } from "@/components/preview/WatermarkPreview";
@@ -17,12 +17,29 @@ async function getImageSize(url: string) {
   return { width: image.naturalWidth, height: image.naturalHeight };
 }
 
+function getPastedImageFile(event: ClipboardEvent) {
+  const files = Array.from(event.clipboardData?.files || []);
+  const file = files.find((item) => item.type.startsWith("image/"));
+  if (file) return file;
+
+  const items = Array.from(event.clipboardData?.items || []);
+  const imageItem = items.find((item) => item.kind === "file" && item.type.startsWith("image/"));
+  const pastedFile = imageItem?.getAsFile();
+  if (!pastedFile) return null;
+
+  const extension = pastedFile.type.split("/")[1] || "png";
+  return new File([pastedFile], `pasted-image.${extension}`, {
+    type: pastedFile.type,
+    lastModified: Date.now(),
+  });
+}
+
 export function WatermarkApp() {
   const { settings, updateSettings, applyExif, clearExif } = useWatermark();
   const [imageSource, setImageSource] = useState<ImageSource | null>(null);
   const [rendering, setRendering] = useState(false);
 
-  async function handleFile(inputFile: File) {
+  const handleFile = useCallback(async (inputFile: File) => {
     setRendering(true);
     try {
       const normalized = await normalizeImageFile(inputFile);
@@ -53,7 +70,20 @@ export function WatermarkApp() {
     } finally {
       setRendering(false);
     }
-  }
+  }, [applyExif, settings.brandId]);
+
+  useEffect(() => {
+    function handlePaste(event: ClipboardEvent) {
+      const file = getPastedImageFile(event);
+      if (!file) return;
+
+      event.preventDefault();
+      void handleFile(file);
+    }
+
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [handleFile]);
 
   function clearImage() {
     clearExif();
