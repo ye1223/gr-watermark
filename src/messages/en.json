@@ -5,8 +5,11 @@
     "language": "Language"
   },
   "upload": {
-    "hint": "Click or drag to upload",
-    "formats": "JPG / PNG / WEBP / HEIC supported"
+    "hint": "Upload photo",
+    "formats": "Drop here or choose JPG / PNG / WEBP / HEIC"
+  },
+  "preview": {
+    "title": "Canvas preview"
   },
   "config": {
     "title": "Control Panel",
@@ -22,6 +25,10 @@
     "brandLogo": "Brand_LOGO",
     "cameraModel": "Camera model",
     "exifData": "EXIF data",
+    "exifFocalLength": "Focal length",
+    "exifAperture": "Aperture",
+    "exifShutter": "Shutter",
+    "exifIso": "ISO",
     "datetime": "Date time",
     "photoSubtitle": "Subtitle",
     "subtitlePlaceholder": "photo by ...",

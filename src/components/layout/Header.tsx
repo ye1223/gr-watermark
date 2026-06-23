@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Aperture, Languages } from "lucide-react";
+import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -18,11 +18,14 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b bg-background/85 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:px-4">
-      <Link className="flex items-center gap-2.5 font-medium tracking-normal" href={`/${locale}`}>
-        <span className="grid size-8 place-items-center rounded-lg border bg-card shadow-sm">
-          <Aperture className="size-4 text-primary" />
+      <Link className="flex items-center gap-2.5 leading-none" href={`/${locale}`} aria-label={t("title")}>
+        <span className="font-mono text-[13px] font-semibold tracking-[0.14em] text-foreground">
+          GR
         </span>
-        <span className="leading-none">{t("title")}</span>
+        <span className="h-4 w-px bg-border" />
+        <span className="text-sm font-medium tracking-normal text-foreground/90">
+          Watermark
+        </span>
       </Link>
       <div className="flex items-center gap-2">
         <Tooltip>

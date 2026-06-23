@@ -5,8 +5,11 @@
     "language": "语言"
   },
   "upload": {
-    "hint": "点击或拖拽上传图片",
-    "formats": "支持 JPG / PNG / WEBP / HEIC"
+    "hint": "上传照片",
+    "formats": "拖拽到此处或点击选择 JPG / PNG / WEBP / HEIC"
+  },
+  "preview": {
+    "title": "画布预览"
   },
   "config": {
     "title": "控制面板",
@@ -22,6 +25,10 @@
     "brandLogo": "品牌_LOGO",
     "cameraModel": "相机型号",
     "exifData": "EXIF 数据",
+    "exifFocalLength": "焦距",
+    "exifAperture": "光圈",
+    "exifShutter": "快门",
+    "exifIso": "ISO",
     "datetime": "日期时间",
     "photoSubtitle": "副标题",
     "subtitlePlaceholder": "photo by ...",

@@ -1,6 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { FieldRow } from "./FieldRow";
 
@@ -24,6 +26,34 @@ export function ExifInputs({
   onEnabledChange: (checked: boolean) => void;
   onChange: (values: Partial<ExifInputValues>) => void;
 }) {
+  const t = useTranslations("config");
+  const fields = [
+    {
+      key: "focalLength",
+      label: t("exifFocalLength"),
+      value: values.focalLength,
+      onChange: (value: string) => onChange({ focalLength: value }),
+    },
+    {
+      key: "aperture",
+      label: t("exifAperture"),
+      value: values.aperture,
+      onChange: (value: string) => onChange({ aperture: value }),
+    },
+    {
+      key: "shutter",
+      label: t("exifShutter"),
+      value: values.shutter,
+      onChange: (value: string) => onChange({ shutter: value }),
+    },
+    {
+      key: "iso",
+      label: t("exifIso"),
+      value: values.iso,
+      onChange: (value: string) => onChange({ iso: value }),
+    },
+  ];
+
   return (
     <FieldRow
       action={
@@ -35,11 +65,19 @@ export function ExifInputs({
       label={label}
     >
       {enabled ? (
-        <div className="grid grid-cols-2 gap-2">
-          <Input className="h-9" value={values.focalLength} onChange={(event) => onChange({ focalLength: event.target.value })} />
-          <Input className="h-9" value={values.aperture} onChange={(event) => onChange({ aperture: event.target.value })} />
-          <Input className="h-9" value={values.shutter} onChange={(event) => onChange({ shutter: event.target.value })} />
-          <Input className="h-9" value={values.iso} onChange={(event) => onChange({ iso: event.target.value })} />
+        <div className="grid grid-cols-2 gap-2.5">
+          {fields.map((field) => (
+            <div key={field.key} className="space-y-1.5">
+              <Label className="text-[11px] font-medium text-muted-foreground">
+                {field.label}
+              </Label>
+              <Input
+                className="h-9"
+                value={field.value}
+                onChange={(event) => field.onChange(event.target.value)}
+              />
+            </div>
+          ))}
         </div>
       ) : null}
     </FieldRow>

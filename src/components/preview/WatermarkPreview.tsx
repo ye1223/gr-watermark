@@ -20,7 +20,7 @@ export function WatermarkPreview({
   rendering: boolean;
   onFile: (file: File) => void;
 }) {
-  const t = useTranslations();
+  const t = useTranslations("preview");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [localRendering, setLocalRendering] = useState(false);
 
@@ -66,10 +66,10 @@ export function WatermarkPreview({
           </span>
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">
-              {imageSource?.name || t("upload.hint")}
+              {imageSource?.name || t("title")}
             </p>
             <p className="font-mono text-[11px] text-muted-foreground">
-              {settings.outputRatio} · {brand.name}
+              {settings.outputRatio} / {brand.name}
             </p>
           </div>
         </div>
@@ -79,13 +79,13 @@ export function WatermarkPreview({
           <UploadZone onFile={onFile} />
         ) : (
           <div className="w-full">
-            <div className="relative mx-auto flex max-h-[calc(100vh-12rem)] max-w-full items-center justify-center rounded-lg border bg-muted/40 p-3 shadow-inner">
+            <div className="relative mx-auto flex max-h-[calc(100vh-12rem)] max-w-full items-center justify-center border bg-muted/35 p-3 shadow-inner">
               {isBusy ? (
-                <Skeleton className="absolute inset-3 z-10 rounded-md bg-muted/70" />
+                <Skeleton className="absolute inset-3 z-10 bg-muted/70" />
               ) : null}
               <canvas
                 ref={canvasRef}
-                className="max-h-[calc(100vh-14rem)] max-w-full rounded-sm bg-background object-contain shadow-sm"
+                className="max-h-[calc(100vh-14rem)] max-w-full bg-background object-contain shadow-sm"
               />
             </div>
           </div>
