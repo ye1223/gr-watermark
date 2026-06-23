@@ -1,5 +1,16 @@
 export type FrameStyle = "ORIGINAL" | "CLASSIC" | "MINIMAL" | "INSTAX" | "POLAROID";
-export type OutputRatio = "ORIGINAL" | "1:1" | "3:4" | "4:3" | "16:9" | "9:16";
+export const outputRatios = [
+  "CLASSIC_LANDSCAPE",
+  "CLASSIC_PORTRAIT",
+  "SQUARE",
+  "SOCIAL_PORTRAIT",
+  "CINEMA_WIDE",
+  "STORY_VERTICAL",
+  "INSTAX_MINI",
+  "INSTAX_SQUARE",
+  "INSTAX_WIDE",
+] as const;
+export type OutputRatio = (typeof outputRatios)[number];
 export type BorderTone = "white" | "black";
 
 export interface WatermarkSettings {
@@ -45,13 +56,4 @@ export const frameStyles: FrameStyle[] = [
   "MINIMAL",
   "INSTAX",
   "POLAROID",
-];
-
-export const outputRatios: OutputRatio[] = [
-  "ORIGINAL",
-  "1:1",
-  "3:4",
-  "4:3",
-  "16:9",
-  "9:16",
 ];

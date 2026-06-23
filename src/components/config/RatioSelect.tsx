@@ -22,7 +22,7 @@ export function RatioSelect({
   const t = useTranslations();
 
   return (
-    <FieldRow icon={<Type className="size-3.5" />} label={t("config.outputRatio")}>
+    <FieldRow icon={<Type className="size-3.5" />} label={t("config.outputStyle")}>
       <Select value={value} onValueChange={(next) => onChange(next as OutputRatio)}>
         <SelectTrigger className="h-9 w-full rounded border">
           <SelectValue />
@@ -30,7 +30,7 @@ export function RatioSelect({
         <SelectContent>
           {outputRatios.map((ratio) => (
             <SelectItem key={ratio} value={ratio}>
-              {t(`ratio.${ratio}`)}
+              {t(`outputStyles.${ratio}`)}
             </SelectItem>
           ))}
         </SelectContent>

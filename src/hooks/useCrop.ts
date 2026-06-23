@@ -1,9 +1,22 @@
 import type { OutputRatio } from "@/types/watermark";
 
+const presetRatioMap: Partial<Record<OutputRatio, number>> = {
+  CLASSIC_LANDSCAPE: 3 / 2,
+  CLASSIC_PORTRAIT: 2 / 3,
+  SQUARE: 1,
+  SOCIAL_PORTRAIT: 4 / 5,
+  CINEMA_WIDE: 16 / 9,
+  STORY_VERTICAL: 9 / 16,
+  INSTAX_MINI: 54 / 86,
+  INSTAX_SQUARE: 1,
+  INSTAX_WIDE: 108 / 86,
+};
+
 export function ratioToNumber(ratio: OutputRatio, fallback: number) {
-  if (ratio === "ORIGINAL") return fallback;
-  const [width, height] = ratio.split(":").map(Number);
-  return width / height;
+  const presetRatio = presetRatioMap[ratio];
+  if (presetRatio) return presetRatio;
+
+  return fallback;
 }
 
 export function getCenteredCrop(

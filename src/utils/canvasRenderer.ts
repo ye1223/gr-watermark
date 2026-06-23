@@ -122,7 +122,7 @@ export function drawWatermarkCanvas({
   ctx.textAlign = "left";
   if (title) {
     ctx.font = `650 ${titleSize}px Inter, Arial, sans-serif`;
-    ctx.fillText(title, padX, barY + bottomBorder * (subtitle ? 0.34 : 0.38), leftWidth);
+    ctx.fillText(title, padX, barY + bottomBorder * (subtitle ? 0.34 : 0.5), leftWidth);
   }
   ctx.fillStyle = colors.muted;
   ctx.font = `400 ${smallSize}px Inter, Arial, sans-serif`;
