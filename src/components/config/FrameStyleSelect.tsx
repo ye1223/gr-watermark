@@ -24,7 +24,7 @@ export function FrameStyleSelect({
   return (
     <FieldRow icon={<CircleDot className="size-3.5" />} label={t("config.frameStyle")}>
       <Select value={value} onValueChange={(next) => onChange(next as FrameStyle)}>
-        <SelectTrigger className="h-9 w-full rounded border">
+        <SelectTrigger className="h-9 w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

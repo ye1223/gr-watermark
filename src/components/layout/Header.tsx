@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Languages } from "lucide-react";
+import { Aperture, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -17,15 +17,17 @@ export function Header() {
   const nextLocale = locale === "zh" ? "en" : "zh";
 
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-background/85 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:px-6">
-      <Link className="flex items-center gap-2 font-medium tracking-normal" href={`/${locale}`}>
-        <span className="size-2 rounded-full bg-[#CC0000]" />
-        <span>{t("title")}</span>
+    <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b bg-background/85 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:px-4">
+      <Link className="flex items-center gap-2.5 font-medium tracking-normal" href={`/${locale}`}>
+        <span className="grid size-8 place-items-center rounded-lg border bg-card shadow-sm">
+          <Aperture className="size-4 text-primary" />
+        </span>
+        <span className="leading-none">{t("title")}</span>
       </Link>
       <div className="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button asChild className="h-8 rounded border px-2 text-xs" variant="ghost">
+            <Button asChild className="h-8 rounded-lg px-2 text-xs" variant="outline">
               <Link aria-label={t("language")} href={`/${nextLocale}`}>
                 <Languages className="mr-1 size-3.5" />
                 {locale.toUpperCase()} / {nextLocale.toUpperCase()}

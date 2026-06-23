@@ -22,7 +22,7 @@ export function BrandLogoSelect({
   return (
     <FieldRow label={label}>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="h-9 w-full rounded border">
+        <SelectTrigger className="h-9 w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

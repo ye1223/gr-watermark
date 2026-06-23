@@ -29,7 +29,6 @@ export function ExifInputs({
       action={
         <Switch
           checked={enabled}
-          className="data-[state=checked]:bg-[#CC0000]"
           onCheckedChange={onEnabledChange}
         />
       }
@@ -37,10 +36,10 @@ export function ExifInputs({
     >
       {enabled ? (
         <div className="grid grid-cols-2 gap-2">
-          <Input className="h-9 rounded border" value={values.focalLength} onChange={(event) => onChange({ focalLength: event.target.value })} />
-          <Input className="h-9 rounded border" value={values.aperture} onChange={(event) => onChange({ aperture: event.target.value })} />
-          <Input className="h-9 rounded border" value={values.shutter} onChange={(event) => onChange({ shutter: event.target.value })} />
-          <Input className="h-9 rounded border" value={values.iso} onChange={(event) => onChange({ iso: event.target.value })} />
+          <Input className="h-9" value={values.focalLength} onChange={(event) => onChange({ focalLength: event.target.value })} />
+          <Input className="h-9" value={values.aperture} onChange={(event) => onChange({ aperture: event.target.value })} />
+          <Input className="h-9" value={values.shutter} onChange={(event) => onChange({ shutter: event.target.value })} />
+          <Input className="h-9" value={values.iso} onChange={(event) => onChange({ iso: event.target.value })} />
         </div>
       ) : null}
     </FieldRow>

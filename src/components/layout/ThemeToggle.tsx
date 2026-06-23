@@ -23,7 +23,7 @@ export function ThemeToggle() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="flex items-center border">
+    <div className="flex items-center rounded-lg border bg-muted p-0.5">
       {modes.map((mode) => {
         const Icon = mode.icon;
         const active = mounted && (theme || "system") === mode.value;
@@ -34,8 +34,8 @@ export function ThemeToggle() {
               <Button
                 aria-label={mode.label}
                 aria-pressed={active}
-                className={`size-8 rounded-none border-r last:border-r-0 ${
-                  active ? "bg-accent text-accent-foreground" : ""
+                className={`size-7 rounded-md ${
+                  active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
                 }`}
                 size="icon"
                 variant="ghost"

@@ -22,14 +22,13 @@ export function ModelInput({
       action={
         <Switch
           checked={enabled}
-          className="data-[state=checked]:bg-[#CC0000]"
           onCheckedChange={onEnabledChange}
         />
       }
       label={label}
     >
       {enabled ? (
-        <Input className="h-9 rounded border" value={value} onChange={(event) => onChange(event.target.value)} />
+        <Input className="h-9" value={value} onChange={(event) => onChange(event.target.value)} />
       ) : null}
     </FieldRow>
   );

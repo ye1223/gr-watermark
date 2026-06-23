@@ -85,6 +85,8 @@ export function ActionButtons({
     }
   }
 
+  if (!imageSource) return null;
+
   const disabled = !imageSource || busy !== null;
   const items = [
     { key: "clear", icon: Trash2, label: t("clear"), onClick: onClear, show: true },
@@ -97,15 +99,15 @@ export function ActionButtons({
 
   return (
     <div
-      className="grid border-t bg-background md:absolute md:bottom-5 md:left-5 md:w-auto md:grid-cols-none md:grid-flow-col md:border md:bg-background/90 md:backdrop-blur"
+      className="grid border-t bg-card/95 p-2 backdrop-blur md:absolute md:bottom-4 md:left-1/2 md:w-auto md:-translate-x-1/2 md:grid-cols-none md:grid-flow-col md:rounded-xl md:border md:shadow-lg"
       style={{ gridTemplateColumns: `repeat(${visibleItems.length}, minmax(0, 1fr))` }}
     >
       {visibleItems.map((item) => (
           <Button
             key={item.key}
-            className="h-11 rounded-none border-r text-xs last:border-r-0 md:w-24"
+            className="h-9 rounded-lg px-3 text-xs md:w-24"
             disabled={disabled && item.key !== "clear"}
-            variant="ghost"
+            variant={item.key === "download" ? "default" : item.key === "clear" ? "destructive" : "ghost"}
             onClick={item.onClick}
           >
             <item.icon className="mr-1 size-3.5" />

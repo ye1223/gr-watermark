@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ImageIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getBrand } from "@/brands.config";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ImageSource, WatermarkSettings } from "@/types/watermark";
@@ -18,6 +20,7 @@ export function WatermarkPreview({
   rendering: boolean;
   onFile: (file: File) => void;
 }) {
+  const t = useTranslations();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [localRendering, setLocalRendering] = useState(false);
 
@@ -52,21 +55,37 @@ export function WatermarkPreview({
   }, [imageSource, settings]);
 
   const isBusy = rendering || localRendering;
+  const brand = getBrand(settings.brandId);
 
   return (
-    <section className="grid-bg flex min-h-[calc(100vh-3.5rem)] flex-1 items-center justify-center p-4 md:p-8">
-      <div className="relative flex w-full max-w-5xl items-center justify-center">
+    <section className="grid-bg flex min-h-[520px] flex-1 flex-col">
+      <div className="flex h-12 items-center justify-between border-b bg-card/90 px-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="grid size-7 shrink-0 place-items-center rounded-md bg-muted">
+            <ImageIcon className="size-4 text-muted-foreground" />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">
+              {imageSource?.name || t("upload.hint")}
+            </p>
+            <p className="font-mono text-[11px] text-muted-foreground">
+              {settings.outputRatio} · {brand.name}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="relative flex min-h-0 flex-1 items-center justify-center p-4 md:p-6">
         {!imageSource ? (
           <UploadZone onFile={onFile} />
         ) : (
           <div className="w-full">
-            <div className="relative mx-auto flex max-h-[70vh] max-w-full items-center justify-center">
+            <div className="relative mx-auto flex max-h-[calc(100vh-12rem)] max-w-full items-center justify-center rounded-lg border bg-muted/40 p-3 shadow-inner">
               {isBusy ? (
-                <Skeleton className="absolute inset-0 z-10 rounded bg-muted/70" />
+                <Skeleton className="absolute inset-3 z-10 rounded-md bg-muted/70" />
               ) : null}
               <canvas
                 ref={canvasRef}
-                className="max-h-[70vh] max-w-full border border-border bg-background object-contain"
+                className="max-h-[calc(100vh-14rem)] max-w-full rounded-sm bg-background object-contain shadow-sm"
               />
             </div>
           </div>

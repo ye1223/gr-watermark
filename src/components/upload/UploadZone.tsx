@@ -32,9 +32,9 @@ export function UploadZone({
   return (
     <div
       className={cn(
-        "grid w-full cursor-pointer place-items-center border border-dashed bg-background/70 text-center transition",
+        "grid w-full max-w-2xl cursor-pointer place-items-center rounded-xl border border-dashed bg-card/80 text-center shadow-sm transition hover:bg-card",
         compact ? "min-h-[320px]" : "min-h-[460px]",
-        dragging ? "border-[#CC0000] bg-[#CC0000]/5" : "border-border"
+        dragging ? "border-primary bg-accent" : "border-border"
       )}
       role="button"
       tabIndex={0}
@@ -57,8 +57,10 @@ export function UploadZone({
         type="file"
         onChange={pickFile}
       />
-      <div className="space-y-3 px-6">
-        <ImagePlus className="mx-auto size-8 text-[#CC0000]" />
+      <div className="space-y-4 px-6">
+        <span className="mx-auto grid size-12 place-items-center rounded-xl border bg-muted">
+          <ImagePlus className="size-6 text-primary" />
+        </span>
         <div>
           <p className="text-sm font-medium">{t("hint")}</p>
           <p className="mt-1 text-xs text-muted-foreground">{t("formats")}</p>

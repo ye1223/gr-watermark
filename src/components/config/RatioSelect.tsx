@@ -24,7 +24,7 @@ export function RatioSelect({
   return (
     <FieldRow icon={<Type className="size-3.5" />} label={t("config.outputRatio")}>
       <Select value={value} onValueChange={(next) => onChange(next as OutputRatio)}>
-        <SelectTrigger className="h-9 w-full rounded border">
+        <SelectTrigger className="h-9 w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

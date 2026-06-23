@@ -17,7 +17,6 @@ export function WatermarkToggle({
       action={
         <Switch
           checked={checked}
-          className="data-[state=checked]:bg-[#CC0000]"
           onCheckedChange={onChange}
         />
       }

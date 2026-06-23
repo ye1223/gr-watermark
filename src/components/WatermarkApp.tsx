@@ -69,8 +69,8 @@ export function WatermarkApp() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <main className="relative md:flex">
-        <div className="relative flex min-w-0 flex-1 flex-col">
+      <main className="mx-auto grid min-h-[calc(100vh-3.5rem)] w-full max-w-[1800px] gap-4 p-3 md:grid-cols-[minmax(0,1fr)_380px] md:p-4">
+        <div className="relative flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
           <WatermarkPreview
             imageSource={imageSource}
             rendering={rendering}

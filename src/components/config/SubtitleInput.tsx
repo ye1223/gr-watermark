@@ -24,7 +24,6 @@ export function SubtitleInput({
       action={
         <Switch
           checked={enabled}
-          className="data-[state=checked]:bg-[#CC0000]"
           onCheckedChange={onEnabledChange}
         />
       }
@@ -32,7 +31,7 @@ export function SubtitleInput({
     >
       {enabled ? (
         <Input
-          className="h-9 rounded border"
+          className="h-9"
           placeholder={placeholder}
           value={value}
           onChange={(event) => onChange(event.target.value)}
