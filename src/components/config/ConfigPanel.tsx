@@ -32,9 +32,7 @@ export function ConfigPanel({
         />
         <RatioSelect
           value={settings.outputRatio}
-          onChange={(outputRatio) =>
-            updateSettings({ outputRatio, cropZoom: 1, cropX: 0, cropY: 0 })
-          }
+          onChange={(outputRatio) => updateSettings({ outputRatio })}
         />
         <WatermarkToggle
           checked={settings.watermark}

@@ -75,7 +75,6 @@ export function WatermarkApp() {
             imageSource={imageSource}
             rendering={rendering}
             settings={settings}
-            updateSettings={updateSettings}
             onFile={handleFile}
           />
           <ActionButtons imageSource={imageSource} settings={settings} onClear={clearImage} />

@@ -22,9 +22,6 @@ export const defaultSettings: WatermarkSettings = {
   date: "2026.01.01",
   showSubtitle: false,
   subtitle: "",
-  cropZoom: 1,
-  cropX: 0,
-  cropY: 0,
 };
 
 export const emptyExifSettings = {
@@ -34,10 +31,21 @@ export const emptyExifSettings = {
   shutter: "",
   iso: "",
   date: "",
-  cropZoom: 1,
-  cropX: 0,
-  cropY: 0,
 };
+
+const settingKeys = Object.keys(defaultSettings) as Array<keyof WatermarkSettings>;
+
+function normalizeStoredSettings(stored: unknown): WatermarkSettings {
+  if (!stored || typeof stored !== "object") return defaultSettings;
+
+  return settingKeys.reduce(
+    (next, key) => ({
+      ...next,
+      [key]: (stored as Partial<WatermarkSettings>)[key] ?? defaultSettings[key],
+    }),
+    { ...defaultSettings }
+  );
+}
 
 export function useWatermark() {
   const [settings, setSettings] = useState<WatermarkSettings>(defaultSettings);
@@ -47,7 +55,7 @@ export function useWatermark() {
     try {
       const stored = window.localStorage.getItem(storageKey);
       if (stored) {
-        setSettings({ ...defaultSettings, ...JSON.parse(stored) });
+        setSettings(normalizeStoredSettings(JSON.parse(stored)));
       }
     } finally {
       setHydrated(true);
@@ -75,9 +83,6 @@ export function useWatermark() {
           shutter: exif.shutter || current.shutter,
           iso: exif.iso || current.iso,
           date: exif.date || current.date,
-          cropZoom: 1,
-          cropX: 0,
-          cropY: 0,
         })),
       clearExif: () =>
         setSettings((current) => ({

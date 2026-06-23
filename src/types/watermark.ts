@@ -19,9 +19,6 @@ export interface WatermarkSettings {
   date: string;
   showSubtitle: boolean;
   subtitle: string;
-  cropZoom: number;
-  cropX: number;
-  cropY: number;
 }
 
 export interface ImageSource {
