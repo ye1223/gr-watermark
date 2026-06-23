@@ -153,6 +153,60 @@ export function drawWatermarkCanvas({
   }
 }
 
+export function drawCropEditorCanvas({
+  canvas,
+  image,
+  settings,
+}: {
+  canvas: HTMLCanvasElement;
+  image: HTMLImageElement;
+  settings: WatermarkSettings;
+}) {
+  const sourceWidth = image.naturalWidth;
+  const sourceHeight = image.naturalHeight;
+  const scale = Math.min(1, 1600 / Math.max(sourceWidth, sourceHeight));
+  const outputWidth = Math.round(sourceWidth * scale);
+  const outputHeight = Math.round(sourceHeight * scale);
+  const crop = getAdjustedCrop(
+    sourceWidth,
+    sourceHeight,
+    settings.outputRatio,
+    settings.cropZoom,
+    settings.cropX,
+    settings.cropY
+  );
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) return;
+
+  canvas.width = outputWidth;
+  canvas.height = outputHeight;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(image, 0, 0, outputWidth, outputHeight);
+
+  const x = crop.sx * scale;
+  const y = crop.sy * scale;
+  const width = crop.sw * scale;
+  const height = crop.sh * scale;
+
+  ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
+  ctx.fillRect(0, 0, outputWidth, y);
+  ctx.fillRect(0, y + height, outputWidth, outputHeight - y - height);
+  ctx.fillRect(0, y, x, height);
+  ctx.fillRect(x + width, y, outputWidth - x - width, height);
+
+  ctx.strokeStyle = "#CC0000";
+  ctx.lineWidth = Math.max(2, Math.round(Math.min(outputWidth, outputHeight) * 0.003));
+  ctx.strokeRect(x + ctx.lineWidth / 2, y + ctx.lineWidth / 2, width - ctx.lineWidth, height - ctx.lineWidth);
+
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.72)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([Math.max(8, outputWidth * 0.01), Math.max(5, outputWidth * 0.006)]);
+  ctx.strokeRect(x + 6, y + 6, Math.max(0, width - 12), Math.max(0, height - 12));
+  ctx.setLineDash([]);
+}
+
 export async function renderWatermarkBlob({
   imageSource,
   settings,

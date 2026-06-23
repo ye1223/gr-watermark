@@ -2,14 +2,18 @@
 
 import "react-image-crop/dist/ReactCrop.css";
 
-import { Check, Crop, ZoomIn } from "lucide-react";
+import { Crop, ZoomIn } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getBrand } from "@/brands.config";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAdjustedCrop, ratioToNumber } from "@/hooks/useCrop";
 import type { ImageSource, WatermarkSettings } from "@/types/watermark";
-import { drawWatermarkCanvas, loadImageElement } from "@/utils/canvasRenderer";
+import {
+  drawCropEditorCanvas,
+  drawWatermarkCanvas,
+  loadImageElement,
+} from "@/utils/canvasRenderer";
 import { UploadZone } from "../upload/UploadZone";
 
 export function WatermarkPreview({
@@ -28,6 +32,8 @@ export function WatermarkPreview({
   const t = useTranslations("config");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const activePointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const cropStateRef = useRef({ cropX: 0, cropY: 0, cropZoom: 1 });
+  const hudTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingCropRef = useRef<Partial<WatermarkSettings> | null>(null);
   const cropFrameRef = useRef<number | null>(null);
   const dragRef = useRef<{
@@ -39,7 +45,7 @@ export function WatermarkPreview({
   } | null>(null);
   const pinchRef = useRef<{ distance: number; zoom: number } | null>(null);
   const [localRendering, setLocalRendering] = useState(false);
-  const [cropWidgetOpen, setCropWidgetOpen] = useState(true);
+  const [cropHudVisible, setCropHudVisible] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,18 +54,25 @@ export function WatermarkPreview({
       setLocalRendering(true);
       const brand = getBrand(settings.brandId);
       try {
-        const [image, logo] = await Promise.all([
-          loadImageElement(imageSource.url),
-          loadImageElement(brand.logo).catch(() => null),
-        ]);
+        const image = await loadImageElement(imageSource.url);
         if (cancelled || !canvasRef.current) return;
-        drawWatermarkCanvas({
-          canvas: canvasRef.current,
-          image,
-          settings,
-          brand,
-          logo,
-        });
+        if (settings.outputRatio === "ORIGINAL") {
+          const logo = await loadImageElement(brand.logo).catch(() => null);
+          if (cancelled || !canvasRef.current) return;
+          drawWatermarkCanvas({
+            canvas: canvasRef.current,
+            image,
+            settings,
+            brand,
+            logo,
+          });
+        } else {
+          drawCropEditorCanvas({
+            canvas: canvasRef.current,
+            image,
+            settings,
+          });
+        }
       } finally {
         if (!cancelled) setLocalRendering(false);
       }
@@ -100,21 +113,28 @@ export function WatermarkPreview({
     ? ratioToNumber(settings.outputRatio, imageSource.width / imageSource.height)
     : 1;
   const previewWidth = Math.round(
-    Math.max(96, Math.min(184, cropRatio >= 1 ? 184 : 184 * cropRatio))
+    Math.max(72, Math.min(128, cropRatio >= 1 ? 128 : 128 * cropRatio))
   );
 
   useEffect(() => {
-    if (isCropping) {
-      setCropWidgetOpen(true);
-    } else {
-      setCropWidgetOpen(false);
-    }
-  }, [isCropping, settings.outputRatio, imageSource?.url]);
+    cropStateRef.current = {
+      cropX: settings.cropX,
+      cropY: settings.cropY,
+      cropZoom: settings.cropZoom,
+    };
+  }, [settings.cropX, settings.cropY, settings.cropZoom]);
+
+  useEffect(() => {
+    setCropHudVisible(false);
+  }, [settings.outputRatio, imageSource?.url]);
 
   useEffect(() => {
     return () => {
       if (cropFrameRef.current !== null) {
         cancelAnimationFrame(cropFrameRef.current);
+      }
+      if (hudTimeoutRef.current) {
+        clearTimeout(hudTimeoutRef.current);
       }
     };
   }, []);
@@ -138,7 +158,19 @@ export function WatermarkPreview({
     if (activePointersRef.current.size < 2) pinchRef.current = null;
   }
 
+  function showCropHud() {
+    if (!isCropping) return;
+    setCropHudVisible(true);
+    if (hudTimeoutRef.current) clearTimeout(hudTimeoutRef.current);
+    hudTimeoutRef.current = setTimeout(() => setCropHudVisible(false), 900);
+  }
+
   function scheduleCropUpdate(patch: Partial<WatermarkSettings>) {
+    cropStateRef.current = {
+      cropX: patch.cropX ?? cropStateRef.current.cropX,
+      cropY: patch.cropY ?? cropStateRef.current.cropY,
+      cropZoom: patch.cropZoom ?? cropStateRef.current.cropZoom,
+    };
     pendingCropRef.current = { ...pendingCropRef.current, ...patch };
     if (cropFrameRef.current !== null) return;
 
@@ -158,7 +190,7 @@ export function WatermarkPreview({
     base = dragRef.current
   ) {
     if (!base) return;
-    setCropWidgetOpen(true);
+    showCropHud();
     scheduleCropUpdate({
       cropX: clampCrop(base.cropX + (deltaX / width) * 200),
       cropY: clampCrop(base.cropY + (deltaY / height) * 200),
@@ -166,7 +198,7 @@ export function WatermarkPreview({
   }
 
   function zoomBy(nextZoom: number) {
-    setCropWidgetOpen(true);
+    showCropHud();
     scheduleCropUpdate({ cropZoom: clampZoom(nextZoom) });
   }
 
@@ -181,25 +213,15 @@ export function WatermarkPreview({
               {isBusy ? (
                 <Skeleton className="absolute inset-0 z-10 rounded bg-muted/70" />
               ) : null}
-              {isCropping && imageSource && crop && cropWidgetOpen ? (
+              {isCropping && imageSource && crop && cropHudVisible ? (
                 <div
-                  className="pointer-events-none absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-[calc(100%+12px)] border border-[#CC0000] bg-background/95 p-1 shadow-sm backdrop-blur"
+                  className="pointer-events-none absolute right-3 top-3 z-20 border border-[#CC0000] bg-background/95 p-1 shadow-sm backdrop-blur"
                   data-testid="crop-preview-widget"
                   style={{ width: previewWidth }}
                 >
                   <div className="mb-1 flex items-center justify-between gap-2 text-[10px] uppercase text-muted-foreground">
                     <span>{t("cropPreview")}</span>
-                    <button
-                      aria-label={t("done")}
-                      className="pointer-events-auto grid size-5 place-items-center border text-foreground"
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setCropWidgetOpen(false);
-                      }}
-                    >
-                      <Check className="size-3" />
-                    </button>
+                    <span>{settings.outputRatio}</span>
                   </div>
                   <div
                     className="relative overflow-hidden border border-border bg-muted"
@@ -220,7 +242,6 @@ export function WatermarkPreview({
                     />
                   </div>
                   <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>{settings.outputRatio}</span>
                     <span className="flex items-center gap-1">
                       <ZoomIn className="size-3" />
                       {Math.round(settings.cropZoom * 100)}%
@@ -244,7 +265,7 @@ export function WatermarkPreview({
                       zoom: settings.cropZoom,
                     };
                     dragRef.current = null;
-                    setCropWidgetOpen(true);
+                    showCropHud();
                     return;
                   }
                   dragRef.current = {
@@ -285,7 +306,7 @@ export function WatermarkPreview({
                   if (!isCropping) return;
                   event.preventDefault();
                   event.stopPropagation();
-                  zoomBy(settings.cropZoom + (event.deltaY > 0 ? -0.08 : 0.08));
+                  zoomBy(cropStateRef.current.cropZoom + (event.deltaY > 0 ? -0.08 : 0.08));
                 }}
               />
               {settings.outputRatio !== "ORIGINAL" ? (
@@ -294,7 +315,7 @@ export function WatermarkPreview({
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    setCropWidgetOpen(true);
+                    showCropHud();
                   }}
                 >
                   <Crop className="size-3" />
