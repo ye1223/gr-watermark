@@ -5,6 +5,7 @@ import { ConfigPanel } from "@/components/config/ConfigPanel";
 import { Header } from "@/components/layout/Header";
 import { WatermarkPreview } from "@/components/preview/WatermarkPreview";
 import { getBrand } from "@/brands.config";
+import { getNearestOutputRatio } from "@/hooks/useCrop";
 import { normalizeImageFile, parseExif } from "@/hooks/useExif";
 import { useWatermark } from "@/hooks/useWatermark";
 import type { ImageSource } from "@/types/watermark";
@@ -48,6 +49,7 @@ export function WatermarkApp() {
       const exif = await parseExif(inputFile);
       const brand = getBrand(settings.brandId);
 
+      updateSettings({ outputRatio: getNearestOutputRatio(width, height) });
       applyExif({
         ...exif,
         model: exif.model || brand.defaultModel,
@@ -70,7 +72,7 @@ export function WatermarkApp() {
     } finally {
       setRendering(false);
     }
-  }, [applyExif, settings.brandId]);
+  }, [applyExif, settings.brandId, updateSettings]);
 
   useEffect(() => {
     function handlePaste(event: ClipboardEvent) {

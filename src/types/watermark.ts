@@ -9,6 +9,8 @@ export type FrameStyle =
 export const outputRatios = [
   "3:2",
   "2:3",
+  "4:3",
+  "3:4",
   "1:1",
   "4:5",
   "5:4",

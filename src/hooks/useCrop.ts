@@ -1,4 +1,4 @@
-import type { OutputRatio } from "@/types/watermark";
+import { outputRatios, type OutputRatio } from "@/types/watermark";
 
 export function ratioToNumber(ratio: OutputRatio, fallback: number) {
   const [width, height] = ratio.split(":").map(Number);
@@ -24,4 +24,15 @@ export function getCenteredCrop(
 
   const sh = imageWidth / ratio;
   return { sx: 0, sy: (imageHeight - sh) / 2, sw: imageWidth, sh };
+}
+
+export function getNearestOutputRatio(imageWidth: number, imageHeight: number): OutputRatio {
+  const sourceRatio = imageWidth / imageHeight;
+
+  return outputRatios.reduce((nearest, ratio) => {
+    const currentDistance = Math.abs(Math.log(ratioToNumber(ratio, sourceRatio) / sourceRatio));
+    const nearestDistance = Math.abs(Math.log(ratioToNumber(nearest, sourceRatio) / sourceRatio));
+
+    return currentDistance < nearestDistance ? ratio : nearest;
+  }, outputRatios[0]);
 }
