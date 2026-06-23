@@ -4,10 +4,10 @@ import type { BorderTone, FrameStyle, ImageSource, WatermarkSettings } from "@/t
 
 const frameMap: Record<FrameStyle, { top: number; side: number; bottom: number }> = {
   ORIGINAL: { top: 0, side: 0, bottom: 0 },
-  CLASSIC: { top: 0, side: 0, bottom: 0.08 },
-  MINIMAL: { top: 0, side: 0, bottom: 0.05 },
-  INSTAX: { top: 0, side: 0, bottom: 0.16 },
-  POLAROID: { top: 0.03, side: 0.03, bottom: 0.2 },
+  CLASSIC: { top: 0, side: 0, bottom: 0.074 },
+  MINIMAL: { top: 0, side: 0, bottom: 0.052 },
+  INSTAX: { top: 0, side: 0, bottom: 0.155 },
+  POLAROID: { top: 0.03, side: 0.03, bottom: 0.19 },
 };
 
 function toneColors(tone: BorderTone) {
@@ -24,6 +24,10 @@ function fitFont(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, 
     next -= 1;
   } while (next > 9);
   return next;
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
 }
 
 export async function loadImageElement(src: string) {
@@ -85,13 +89,19 @@ export function drawWatermarkCanvas({
   if (!hasWatermark || bottomBorder <= 0) return;
 
   const barY = topBorder + baseHeight;
-  const padX = Math.max(18, outputWidth * 0.035);
-  const centerX = outputWidth / 2;
-  const available = outputWidth - padX * 2;
-  const logoWidth = Math.min(logo ? outputWidth * 0.12 : outputWidth * 0.1, 150);
-  const leftWidth = available * 0.33;
-  const rightX = centerX + logoWidth * 0.78;
-  const rightWidth = outputWidth - rightX - padX;
+  const padX = Math.max(24, outputWidth * 0.05);
+  const gap = Math.max(12, outputWidth * 0.018);
+  const logoMaxWidth = Math.min(outputWidth * 0.16, 180);
+  const logoHeight = clamp(bottomBorder * 0.28, 16, 32);
+  const logoRatio = logo ? logo.naturalWidth / logo.naturalHeight : 4.8;
+  const logoDrawWidth = Math.min(logoMaxWidth, logoHeight * logoRatio);
+  const logoCenterX = outputWidth * 0.57;
+  const logoLeft = logoCenterX - logoDrawWidth / 2;
+  const logoRight = logoCenterX + logoDrawWidth / 2;
+  const separatorX = Math.min(outputWidth - padX * 0.35, logoRight + gap);
+  const rightTextX = outputWidth - padX;
+  const rightWidth = Math.max(80, rightTextX - separatorX - gap);
+  const leftWidth = Math.max(90, logoLeft - padX - gap);
 
   ctx.fillStyle = colors.bg;
   ctx.fillRect(0, barY, outputWidth, bottomBorder);
@@ -99,8 +109,17 @@ export function drawWatermarkCanvas({
   const title = settings.showModel ? settings.model || brand.defaultModel : "";
   const date = settings.showDate ? settings.date : "";
   const subtitle = settings.showSubtitle ? settings.subtitle : "";
-  const titleSize = fitFont(ctx, title || " ", leftWidth, Math.max(14, bottomBorder * 0.22), 650);
-  const smallSize = Math.max(9, Math.min(15, bottomBorder * 0.13));
+  const titleSize = fitFont(ctx, title || " ", leftWidth, clamp(bottomBorder * 0.18, 13, 24), 650);
+  const smallSize = clamp(bottomBorder * 0.125, 9, 15);
+  const rightSize = fitFont(
+    ctx,
+    [settings.focalLength, settings.aperture, settings.shutter, settings.iso ? `ISO${settings.iso}` : ""]
+      .filter(Boolean)
+      .join(" "),
+    rightWidth,
+    clamp(bottomBorder * 0.18, 13, 24),
+    650
+  );
 
   ctx.fillStyle = colors.fg;
   ctx.textBaseline = "middle";
@@ -111,38 +130,44 @@ export function drawWatermarkCanvas({
   }
   ctx.fillStyle = colors.muted;
   ctx.font = `400 ${smallSize}px Inter, Arial, sans-serif`;
-  const secondLine = subtitle || date;
-  if (secondLine) ctx.fillText(secondLine, padX, barY + bottomBorder * 0.68, leftWidth);
+  if (subtitle) ctx.fillText(subtitle, padX, barY + bottomBorder * 0.68, leftWidth);
 
-  const logoHeight = Math.max(12, bottomBorder * 0.18);
   if (logo) {
-    const ratio = logo.naturalWidth / logo.naturalHeight;
-    const drawWidth = Math.min(logoWidth, logoHeight * ratio);
-    ctx.drawImage(logo, centerX - drawWidth / 2, barY + (bottomBorder - logoHeight) / 2, drawWidth, logoHeight);
+    ctx.drawImage(logo, logoLeft, barY + (bottomBorder - logoHeight) / 2, logoDrawWidth, logoHeight);
   } else {
     ctx.fillStyle = brand.accentColor;
     ctx.font = `760 ${Math.max(12, logoHeight)}px Inter, Arial, sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillText(brand.name, centerX, barY + bottomBorder / 2, logoWidth);
+    ctx.fillText(brand.name, logoCenterX, barY + bottomBorder / 2, logoMaxWidth);
   }
 
   ctx.strokeStyle = colors.line;
+  ctx.lineWidth = Math.max(1, outputWidth * 0.0014);
   ctx.beginPath();
-  ctx.moveTo(rightX - padX * 0.45, barY + bottomBorder * 0.25);
-  ctx.lineTo(rightX - padX * 0.45, barY + bottomBorder * 0.75);
+  ctx.moveTo(separatorX, barY + bottomBorder * 0.23);
+  ctx.lineTo(separatorX, barY + bottomBorder * 0.77);
   ctx.stroke();
 
-  if (settings.showExif) {
-    const params = [
-      settings.focalLength,
-      settings.aperture,
-      settings.shutter,
-      settings.iso ? `ISO${settings.iso}` : "",
-    ].filter(Boolean);
+  const params = settings.showExif
+    ? [
+        settings.focalLength,
+        settings.aperture,
+        settings.shutter,
+        settings.iso ? `ISO${settings.iso}` : "",
+      ].filter(Boolean)
+    : [];
+  if (params.length || date) {
     ctx.fillStyle = colors.fg;
-    ctx.font = `560 ${Math.max(10, Math.min(17, bottomBorder * 0.14))}px Inter, Arial, sans-serif`;
+    ctx.font = `650 ${rightSize}px Inter, Arial, sans-serif`;
     ctx.textAlign = "right";
-    ctx.fillText(params.join("  |  "), outputWidth - padX, barY + bottomBorder / 2, rightWidth);
+    if (params.length) {
+      ctx.fillText(params.join(" "), rightTextX, barY + bottomBorder * (date ? 0.36 : 0.5), rightWidth);
+    }
+    if (date) {
+      ctx.fillStyle = colors.muted;
+      ctx.font = `400 ${smallSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(date, rightTextX, barY + bottomBorder * (params.length ? 0.68 : 0.5), rightWidth);
+    }
   }
 }
 
