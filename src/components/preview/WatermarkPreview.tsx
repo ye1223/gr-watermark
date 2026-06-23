@@ -78,16 +78,14 @@ export function WatermarkPreview({
         {!imageSource ? (
           <UploadZone onFile={onFile} />
         ) : (
-          <div className="w-full">
-            <div className="relative mx-auto flex max-h-[calc(100vh-12rem)] max-w-full items-center justify-center border bg-muted/35 p-3 shadow-inner">
-              {isBusy ? (
-                <Skeleton className="absolute inset-3 z-10 bg-muted/70" />
-              ) : null}
-              <canvas
-                ref={canvasRef}
-                className="max-h-[calc(100vh-14rem)] max-w-full bg-background object-contain shadow-sm"
-              />
-            </div>
+          <div className="relative mx-auto flex max-h-[calc(100vh-12rem)] w-full items-center justify-center">
+            {isBusy ? (
+              <Skeleton className="absolute inset-0 z-10 bg-muted/60" />
+            ) : null}
+            <canvas
+              ref={canvasRef}
+              className="max-h-[calc(100vh-14rem)] max-w-full bg-background object-contain shadow-sm"
+            />
           </div>
         )}
       </div>
