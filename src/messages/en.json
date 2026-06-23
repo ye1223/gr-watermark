@@ -12,7 +12,7 @@
     "title": "Control Panel",
     "subtitle": "Output settings",
     "frameStyle": "Frame style",
-    "outputStyle": "Output style",
+    "outputRatio": "Output size",
     "watermarkOverlay": "Watermark overlay",
     "advancedSettings": "Advanced settings",
     "brandLogo": "Brand_LOGO",
@@ -35,18 +35,18 @@
     "ORIGINAL": "NO FRAME",
     "CLASSIC": "CLASSIC",
     "MINIMAL": "MINIMAL",
-    "INSTAX": "INSTAX",
+    "INSTAX_MINI": "instax mini",
+    "INSTAX_SQUARE": "instax square",
+    "INSTAX_WIDE": "instax wide",
     "POLAROID": "POLAROID"
   },
-  "outputStyles": {
-    "CLASSIC_LANDSCAPE": "Classic landscape",
-    "CLASSIC_PORTRAIT": "Classic portrait",
-    "SQUARE": "Square print",
-    "SOCIAL_PORTRAIT": "Social portrait",
-    "CINEMA_WIDE": "Cinema wide",
-    "STORY_VERTICAL": "Phone story",
-    "INSTAX_MINI": "Fujifilm instax mini",
-    "INSTAX_SQUARE": "Fujifilm instax square",
-    "INSTAX_WIDE": "Fujifilm instax wide"
+  "ratio": {
+    "3:2": "3:2",
+    "2:3": "2:3",
+    "1:1": "1:1",
+    "4:5": "4:5",
+    "5:4": "5:4",
+    "16:9": "16:9",
+    "9:16": "9:16"
   }
 }

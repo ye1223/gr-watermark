@@ -6,7 +6,9 @@ const frameMap: Record<FrameStyle, { top: number; side: number; bottom: number }
   ORIGINAL: { top: 0, side: 0, bottom: 0 },
   CLASSIC: { top: 0, side: 0, bottom: 0.074 },
   MINIMAL: { top: 0, side: 0, bottom: 0.052 },
-  INSTAX: { top: 0, side: 0, bottom: 0.155 },
+  INSTAX_MINI: { top: 0.035, side: 0.035, bottom: 0.2 },
+  INSTAX_SQUARE: { top: 0.035, side: 0.035, bottom: 0.18 },
+  INSTAX_WIDE: { top: 0.028, side: 0.028, bottom: 0.15 },
   POLAROID: { top: 0.03, side: 0.03, bottom: 0.19 },
 };
 

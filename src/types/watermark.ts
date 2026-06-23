@@ -1,14 +1,19 @@
-export type FrameStyle = "ORIGINAL" | "CLASSIC" | "MINIMAL" | "INSTAX" | "POLAROID";
+export type FrameStyle =
+  | "ORIGINAL"
+  | "CLASSIC"
+  | "MINIMAL"
+  | "INSTAX_MINI"
+  | "INSTAX_SQUARE"
+  | "INSTAX_WIDE"
+  | "POLAROID";
 export const outputRatios = [
-  "CLASSIC_LANDSCAPE",
-  "CLASSIC_PORTRAIT",
-  "SQUARE",
-  "SOCIAL_PORTRAIT",
-  "CINEMA_WIDE",
-  "STORY_VERTICAL",
-  "INSTAX_MINI",
-  "INSTAX_SQUARE",
-  "INSTAX_WIDE",
+  "3:2",
+  "2:3",
+  "1:1",
+  "4:5",
+  "5:4",
+  "16:9",
+  "9:16",
 ] as const;
 export type OutputRatio = (typeof outputRatios)[number];
 export type BorderTone = "white" | "black";
@@ -54,6 +59,8 @@ export const frameStyles: FrameStyle[] = [
   "ORIGINAL",
   "CLASSIC",
   "MINIMAL",
-  "INSTAX",
+  "INSTAX_MINI",
+  "INSTAX_SQUARE",
+  "INSTAX_WIDE",
   "POLAROID",
 ];

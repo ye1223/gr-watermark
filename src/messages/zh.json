@@ -12,7 +12,7 @@
     "title": "控制面板",
     "subtitle": "配置输出参数",
     "frameStyle": "边框样式",
-    "outputStyle": "输出样式",
+    "outputRatio": "输出规格",
     "watermarkOverlay": "水印叠加",
     "advancedSettings": "高级设置",
     "brandLogo": "品牌_LOGO",
@@ -35,18 +35,18 @@
     "ORIGINAL": "无边框",
     "CLASSIC": "CLASSIC",
     "MINIMAL": "MINIMAL",
-    "INSTAX": "INSTAX",
+    "INSTAX_MINI": "instax mini",
+    "INSTAX_SQUARE": "instax square",
+    "INSTAX_WIDE": "instax wide",
     "POLAROID": "POLAROID"
   },
-  "outputStyles": {
-    "CLASSIC_LANDSCAPE": "经典横图",
-    "CLASSIC_PORTRAIT": "经典竖图",
-    "SQUARE": "方形成片",
-    "SOCIAL_PORTRAIT": "社媒竖图",
-    "CINEMA_WIDE": "宽银幕横图",
-    "STORY_VERTICAL": "手机竖屏",
-    "INSTAX_MINI": "Fujifilm instax mini",
-    "INSTAX_SQUARE": "Fujifilm instax square",
-    "INSTAX_WIDE": "Fujifilm instax wide"
+  "ratio": {
+    "3:2": "3:2",
+    "2:3": "2:3",
+    "1:1": "1:1",
+    "4:5": "4:5",
+    "5:4": "5:4",
+    "16:9": "16:9",
+    "9:16": "9:16"
   }
 }

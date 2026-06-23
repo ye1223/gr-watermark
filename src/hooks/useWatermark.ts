@@ -1,13 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { outputRatios, type OutputRatio, type ParsedExif, type WatermarkSettings } from "@/types/watermark";
+import {
+  frameStyles,
+  outputRatios,
+  type FrameStyle,
+  type OutputRatio,
+  type ParsedExif,
+  type WatermarkSettings,
+} from "@/types/watermark";
 
 const storageKey = "gr-watermark-settings";
 
 export const defaultSettings: WatermarkSettings = {
   frameStyle: "CLASSIC",
-  outputRatio: "CLASSIC_LANDSCAPE",
+  outputRatio: "3:2",
   watermark: true,
   brandId: "ricoh-gr",
   borderTone: "white",
@@ -39,20 +46,31 @@ function isOutputRatio(value: unknown): value is OutputRatio {
   return typeof value === "string" && outputRatios.includes(value as OutputRatio);
 }
 
+function isFrameStyle(value: unknown): value is FrameStyle {
+  return typeof value === "string" && frameStyles.includes(value as FrameStyle);
+}
+
+function normalizeFrameStyle(value: unknown): FrameStyle {
+  if (isFrameStyle(value)) return value;
+  if (value === "INSTAX") return "INSTAX_SQUARE";
+
+  return defaultSettings.frameStyle;
+}
+
 function normalizeOutputRatio(value: unknown): OutputRatio {
   if (isOutputRatio(value)) return value;
 
   const legacyRatioMap: Record<string, OutputRatio> = {
-    ORIGINAL: "CLASSIC_LANDSCAPE",
-    "3:2": "CLASSIC_LANDSCAPE",
-    "2:3": "CLASSIC_PORTRAIT",
-    "1:1": "SQUARE",
-    "4:5": "SOCIAL_PORTRAIT",
-    "16:9": "CINEMA_WIDE",
-    "9:16": "STORY_VERTICAL",
-    INSTAX_MINI: "INSTAX_MINI",
-    INSTAX_SQUARE: "INSTAX_SQUARE",
-    INSTAX_WIDE: "INSTAX_WIDE",
+    ORIGINAL: "3:2",
+    CLASSIC_LANDSCAPE: "3:2",
+    CLASSIC_PORTRAIT: "2:3",
+    SQUARE: "1:1",
+    SOCIAL_PORTRAIT: "4:5",
+    CINEMA_WIDE: "16:9",
+    STORY_VERTICAL: "9:16",
+    INSTAX_MINI: "2:3",
+    INSTAX_SQUARE: "1:1",
+    INSTAX_WIDE: "5:4",
   };
 
   return typeof value === "string"
@@ -62,7 +80,10 @@ function normalizeOutputRatio(value: unknown): OutputRatio {
 
 function normalizeStoredSettings(stored: unknown): WatermarkSettings {
   if (!stored || typeof stored !== "object") return defaultSettings;
-  const saved = stored as Partial<WatermarkSettings> & { outputRatio?: unknown };
+  const saved = stored as Partial<WatermarkSettings> & {
+    frameStyle?: unknown;
+    outputRatio?: unknown;
+  };
 
   return settingKeys.reduce(
     (next, key) => ({
@@ -70,6 +91,8 @@ function normalizeStoredSettings(stored: unknown): WatermarkSettings {
       [key]:
         key === "outputRatio"
           ? normalizeOutputRatio(saved.outputRatio)
+          : key === "frameStyle"
+            ? normalizeFrameStyle(saved.frameStyle)
           : saved[key] ?? defaultSettings[key],
     }),
     { ...defaultSettings }
