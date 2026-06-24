@@ -22,32 +22,25 @@ export function ThemeToggle() {
 
   useEffect(() => setMounted(true), []);
 
-  return (
-    <div className="flex items-center rounded-lg border bg-muted p-0.5">
-      {modes.map((mode) => {
-        const Icon = mode.icon;
-        const active = mounted && (theme || "system") === mode.value;
+  const currentMode = modes.find((mode) => mode.value === (mounted ? theme : "system")) || modes[2];
+  const currentIndex = modes.findIndex((mode) => mode.value === currentMode.value);
+  const nextMode = modes[(currentIndex + 1) % modes.length];
+  const Icon = currentMode.icon;
 
-        return (
-          <Tooltip key={mode.value}>
-            <TooltipTrigger asChild>
-              <Button
-                aria-label={mode.label}
-                aria-pressed={active}
-                className={`size-7 rounded-md ${
-                  active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-                }`}
-                size="icon"
-                variant="ghost"
-                onClick={() => setTheme(mode.value)}
-              >
-                <Icon className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{mode.label}</TooltipContent>
-          </Tooltip>
-        );
-      })}
-    </div>
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          aria-label={`${currentMode.label}. Switch to ${nextMode.label}`}
+          className="size-8 rounded-lg border bg-muted text-muted-foreground hover:bg-background hover:text-foreground"
+          size="icon"
+          variant="ghost"
+          onClick={() => setTheme(nextMode.value)}
+        >
+          <Icon className="size-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{currentMode.label}</TooltipContent>
+    </Tooltip>
   );
 }

@@ -33,7 +33,7 @@ export function Header() {
           <TooltipTrigger asChild>
             <Button
               asChild
-              className="size-7 rounded-md border bg-muted text-muted-foreground hover:bg-background hover:text-foreground"
+              className="size-8 rounded-lg border bg-muted text-muted-foreground hover:bg-background hover:text-foreground"
               size="icon"
               variant="ghost"
             >
