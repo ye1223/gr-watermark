@@ -1,4 +1,4 @@
-# GR Watermark
+# GR印迹
 
 Ricoh GR photo frame watermark generator built with Next.js 15, Tailwind CSS, shadcn/ui, next-intl, next-themes, and next-pwa.
 

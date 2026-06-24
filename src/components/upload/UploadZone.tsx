@@ -32,8 +32,10 @@ export function UploadZone({
   return (
     <div
       className={cn(
-        "grid w-full max-w-2xl cursor-pointer place-items-center rounded-lg border border-dashed bg-card/70 text-center transition hover:bg-card",
-        compact ? "min-h-[320px]" : "min-h-[460px]",
+        "w-full max-w-2xl cursor-pointer rounded-lg border border-dashed bg-card/70 transition hover:bg-card",
+        compact
+          ? "grid min-h-[260px] place-items-center px-6 py-8 text-center md:min-h-[320px]"
+          : "grid min-h-[460px] place-items-center text-center",
         dragging ? "border-primary bg-accent" : "border-border"
       )}
       role="button"
@@ -58,12 +60,19 @@ export function UploadZone({
         onChange={pickFile}
       />
       <div className="space-y-3 px-6">
-        <span className="mx-auto grid size-10 place-items-center rounded-lg border bg-muted">
+        <span
+          className={cn(
+            "grid shrink-0 place-items-center rounded-lg border bg-muted",
+            compact ? "mx-auto size-11" : "mx-auto size-10"
+          )}
+        >
           <ImagePlus className="size-5 text-primary" />
         </span>
         <div>
-          <p className="text-sm font-medium leading-none">{t("hint")}</p>
-          <p className="mt-2 text-xs text-muted-foreground">{t("formats")}</p>
+          <p className={cn("font-medium leading-none", compact ? "text-base" : "text-sm")}>{t("hint")}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {t("formats")}
+          </p>
         </div>
       </div>
     </div>

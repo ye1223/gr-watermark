@@ -1,6 +1,6 @@
 {
-  "name": "GR Watermark",
-  "short_name": "GR Mark",
+  "name": "GR印迹",
+  "short_name": "GR印迹",
   "description": "相机照片边框水印生成器",
   "start_url": "/zh",
   "display": "standalone",

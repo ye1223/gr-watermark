@@ -61,7 +61,7 @@ export function WatermarkPreview({
     <section className="grid-bg flex min-h-[520px] flex-1 flex-col">
       <div className="flex h-12 items-center justify-between border-b bg-card/90 px-4">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="grid size-7 shrink-0 place-items-center rounded-md bg-muted">
+          <span className="grid size-7 shrink-0 place-items-center rounded-md bg-muted/80">
             <ImageIcon className="size-4 text-muted-foreground" />
           </span>
           <div className="min-w-0">
@@ -76,7 +76,7 @@ export function WatermarkPreview({
       </div>
       <div className="relative flex min-h-0 flex-1 items-center justify-center p-4 md:p-6">
         {!imageSource ? (
-          <UploadZone onFile={onFile} />
+          <UploadZone compact onFile={onFile} />
         ) : (
           <div className="relative mx-auto flex max-h-[calc(100vh-12rem)] w-full items-center justify-center">
             {isBusy ? (

@@ -24,8 +24,8 @@ export function Header() {
           GR
         </span>
         <span className="h-4 w-px bg-border" />
-        <span className="text-sm font-medium tracking-normal text-foreground/90">
-          Watermark
+        <span className="text-[17px] font-semibold tracking-normal text-foreground">
+          {t("wordmark")}
         </span>
       </Link>
       <div className="flex items-center gap-2">

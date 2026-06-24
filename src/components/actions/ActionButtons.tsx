@@ -61,7 +61,7 @@ export function ActionButtons({
         type: "image/jpeg",
       });
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: "GR Watermark" });
+        await navigator.share({ files: [file], title: "GR印迹" });
       }
     } finally {
       setBusy(null);

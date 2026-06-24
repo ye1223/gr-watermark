@@ -4,8 +4,8 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GR Watermark",
-  description: "Ricoh GR camera photo frame watermark generator",
+  title: "GR印迹",
+  description: "相机照片边框水印生成器",
   manifest: "/manifest.json",
 };
 
