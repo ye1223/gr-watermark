@@ -1,6 +1,3 @@
-"use client";
-
-import * as exifr from "exifr";
 import type { ParsedExif } from "@/types/watermark";
 
 function formatNumber(value: unknown, digits = 1) {
@@ -33,6 +30,7 @@ function formatDate(value: unknown) {
 
 export async function parseExif(file: File): Promise<ParsedExif> {
   try {
+    const exifr = await import("exifr");
     const data = await exifr.parse(file, {
       pick: [
         "Model",

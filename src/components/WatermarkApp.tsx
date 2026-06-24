@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { ConfigPanel } from "@/components/config/ConfigPanel";
 import { Header } from "@/components/layout/Header";
@@ -9,7 +10,11 @@ import { getNearestOutputRatio } from "@/hooks/useCrop";
 import { normalizeImageFile, parseExif } from "@/hooks/useExif";
 import { useWatermark } from "@/hooks/useWatermark";
 import type { ImageSource } from "@/types/watermark";
-import { ActionButtons } from "./actions/ActionButtons";
+
+const ActionButtons = dynamic(
+  () => import("./actions/ActionButtons").then((mod) => mod.ActionButtons),
+  { ssr: false }
+);
 
 async function getImageSize(url: string) {
   const image = new Image();

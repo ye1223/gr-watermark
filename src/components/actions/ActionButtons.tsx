@@ -6,8 +6,6 @@ import { useEffect, useState } from "react";
 import { getBrand } from "@/brands.config";
 import { Button } from "@/components/ui/button";
 import type { ImageSource, WatermarkSettings } from "@/types/watermark";
-import { renderWatermarkBlob } from "@/utils/canvasRenderer";
-import { writeExifToJpeg } from "@/utils/exifWriter";
 
 export function ActionButtons({
   imageSource,
@@ -28,6 +26,10 @@ export function ActionButtons({
 
   async function createOutputBlob() {
     if (!imageSource) return null;
+    const [{ renderWatermarkBlob }, { writeExifToJpeg }] = await Promise.all([
+      import("@/utils/canvasRenderer"),
+      import("@/utils/exifWriter"),
+    ]);
     const rendered = await renderWatermarkBlob({
       imageSource,
       settings,

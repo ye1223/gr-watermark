@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Card,
@@ -8,12 +10,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import type { WatermarkSettings } from "@/types/watermark";
-import { AdvancedSettings } from "./AdvancedSettings";
 import { FrameStyleSelect } from "./FrameStyleSelect";
 import { RatioSelect } from "./RatioSelect";
 import { WatermarkToggle } from "./WatermarkToggle";
+
+const AdvancedSettings = dynamic(
+  () => import("./AdvancedSettings").then((mod) => mod.AdvancedSettings),
+  {
+    ssr: false,
+    loading: () => <div className="h-72 animate-pulse rounded-lg bg-muted/40" />,
+  }
+);
 
 export function ConfigPanel({
   settings,
@@ -23,6 +32,7 @@ export function ConfigPanel({
   updateSettings: (patch: Partial<WatermarkSettings>) => void;
 }) {
   const t = useTranslations("config");
+  const [activeTab, setActiveTab] = useState<"output" | "metadata">("output");
 
   return (
     <aside className="min-h-0 rounded-xl border bg-card shadow-sm md:h-[calc(100vh-5.5rem)] md:overflow-y-auto">
@@ -33,12 +43,27 @@ export function ConfigPanel({
         </h2>
         <p className="mt-1 text-xs text-muted-foreground">{t("subtitle")}</p>
       </div>
-      <Tabs className="p-4" defaultValue="output">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="output">{t("outputTab")}</TabsTrigger>
-          <TabsTrigger value="metadata">{t("metadataTab")}</TabsTrigger>
-        </TabsList>
-        <TabsContent className="mt-4" value="output">
+      <div className="p-4">
+        <div className="grid h-8 w-full grid-cols-2 rounded-lg bg-muted p-[3px]" role="tablist">
+          {(["output", "metadata"] as const).map((tab) => (
+            <button
+              key={tab}
+              aria-selected={activeTab === tab}
+              className={cn(
+                "rounded-md px-2 text-sm font-medium text-muted-foreground transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                activeTab === tab && "bg-background text-foreground shadow-sm dark:bg-input/30"
+              )}
+              role="tab"
+              type="button"
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab === "output" ? t("outputTab") : t("metadataTab")}
+            </button>
+          ))}
+        </div>
+        <div className="mt-4">
+          {activeTab === "output" ? (
           <Card size="sm">
             <CardHeader>
               <CardTitle>{t("outputTab")}</CardTitle>
@@ -60,8 +85,7 @@ export function ConfigPanel({
               />
             </CardContent>
           </Card>
-        </TabsContent>
-        <TabsContent className="mt-4" value="metadata">
+          ) : (
           <Card size="sm">
             <CardHeader>
               <CardTitle>{t("metadataTab")}</CardTitle>
@@ -71,8 +95,9 @@ export function ConfigPanel({
               <AdvancedSettings settings={settings} updateSettings={updateSettings} />
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+          )}
+        </div>
+      </div>
     </aside>
   );
 }

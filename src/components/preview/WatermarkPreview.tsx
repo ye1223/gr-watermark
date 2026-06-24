@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { getBrand } from "@/brands.config";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ImageSource, WatermarkSettings } from "@/types/watermark";
-import { drawWatermarkCanvas, loadImageElement } from "@/utils/canvasRenderer";
 import { UploadZone } from "../upload/UploadZone";
 
 export function WatermarkPreview({
@@ -31,6 +30,7 @@ export function WatermarkPreview({
       setLocalRendering(true);
       const brand = getBrand(settings.brandId);
       try {
+        const { drawWatermarkCanvas, loadImageElement } = await import("@/utils/canvasRenderer");
         const image = await loadImageElement(imageSource.url);
         if (cancelled || !canvasRef.current) return;
         const logo = await loadImageElement(brand.logo).catch(() => null);

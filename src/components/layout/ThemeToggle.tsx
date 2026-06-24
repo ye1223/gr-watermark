@@ -4,11 +4,6 @@ import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 const modes = [
   { value: "light", icon: Sun, label: "Light" },
@@ -28,19 +23,15 @@ export function ThemeToggle() {
   const Icon = currentMode.icon;
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          aria-label={`${currentMode.label}. Switch to ${nextMode.label}`}
-          className="size-8 rounded-lg border bg-muted text-muted-foreground hover:bg-background hover:text-foreground"
-          size="icon"
-          variant="ghost"
-          onClick={() => setTheme(nextMode.value)}
-        >
-          <Icon className="size-4" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{currentMode.label}</TooltipContent>
-    </Tooltip>
+    <Button
+      aria-label={`${currentMode.label}. Switch to ${nextMode.label}`}
+      className="size-8 rounded-lg border bg-muted text-muted-foreground hover:bg-background hover:text-foreground"
+      size="icon"
+      title={currentMode.label}
+      variant="ghost"
+      onClick={() => setTheme(nextMode.value)}
+    >
+      <Icon className="size-4" />
+    </Button>
   );
 }
