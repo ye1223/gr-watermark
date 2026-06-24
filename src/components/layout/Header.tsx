@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -15,6 +14,7 @@ export function Header() {
   const t = useTranslations("header");
   const locale = useLocale();
   const nextLocale = locale === "zh" ? "en" : "zh";
+  const languageLabel = nextLocale === "zh" ? "中" : "EN";
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b bg-background/85 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:px-4">
@@ -30,10 +30,14 @@ export function Header() {
       <div className="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button asChild className="h-8 rounded-lg px-2 text-xs" variant="outline">
+            <Button
+              asChild
+              className="h-7 rounded-md px-2 font-mono text-[11px] text-muted-foreground hover:text-foreground"
+              size="sm"
+              variant="ghost"
+            >
               <Link aria-label={t("language")} href={`/${nextLocale}`}>
-                <Languages className="mr-1 size-3.5" />
-                {locale.toUpperCase()} / {nextLocale.toUpperCase()}
+                {languageLabel}
               </Link>
             </Button>
           </TooltipTrigger>

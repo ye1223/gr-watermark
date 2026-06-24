@@ -1,6 +1,6 @@
 {
   "name": "GR Watermark",
-  "short_name": "GRMark",
+  "short_name": "GR Mark",
   "description": "相机照片边框水印生成器",
   "start_url": "/zh",
   "display": "standalone",
@@ -19,7 +19,7 @@
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/icons/maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

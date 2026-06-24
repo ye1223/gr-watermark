@@ -133,11 +133,11 @@ export function drawWatermarkCanvas({
   ctx.textAlign = "left";
   if (title) {
     ctx.font = `650 ${titleSize}px Inter, Arial, sans-serif`;
-    ctx.fillText(title, padX, barY + bottomBorder * (subtitle ? 0.34 : 0.5), leftWidth);
+    ctx.fillText(title, padX, barY + bottomBorder * (subtitle ? 0.39 : 0.5), leftWidth);
   }
   ctx.fillStyle = colors.muted;
   ctx.font = `400 ${smallSize}px Inter, Arial, sans-serif`;
-  if (subtitle) ctx.fillText(subtitle, padX, barY + bottomBorder * 0.68, leftWidth);
+  if (subtitle) ctx.fillText(subtitle, padX, barY + bottomBorder * (title ? 0.61 : 0.5), leftWidth);
 
   if (logo) {
     ctx.drawImage(logo, logoLeft, barY + (bottomBorder - logoDrawHeight) / 2, logoDrawWidth, logoDrawHeight);
