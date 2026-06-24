@@ -91,9 +91,17 @@ export function drawWatermarkCanvas({
   const padX = Math.max(24, outputWidth * 0.05);
   const gap = Math.max(12, outputWidth * 0.018);
   const logoMaxWidth = outputWidth * 0.18;
-  const logoHeight = Math.max(18, bottomBorder * 0.3);
-  const logoRatio = logo ? logo.naturalWidth / logo.naturalHeight : 4.8;
-  const logoDrawWidth = Math.min(logoMaxWidth, logoHeight * logoRatio);
+  const logoMaxHeight = Math.max(18, bottomBorder * 0.3);
+  const logoRatio =
+    logo && logo.naturalWidth > 0 && logo.naturalHeight > 0
+      ? logo.naturalWidth / logo.naturalHeight
+      : 4.8;
+  const logoSize =
+    logoMaxHeight * logoRatio > logoMaxWidth
+      ? { width: logoMaxWidth, height: logoMaxWidth / logoRatio }
+      : { width: logoMaxHeight * logoRatio, height: logoMaxHeight };
+  const logoDrawWidth = logoSize.width;
+  const logoDrawHeight = logoSize.height;
   const logoCenterX = outputWidth * 0.57;
   const logoLeft = logoCenterX - logoDrawWidth / 2;
   const logoRight = logoCenterX + logoDrawWidth / 2;
@@ -132,10 +140,10 @@ export function drawWatermarkCanvas({
   if (subtitle) ctx.fillText(subtitle, padX, barY + bottomBorder * 0.68, leftWidth);
 
   if (logo) {
-    ctx.drawImage(logo, logoLeft, barY + (bottomBorder - logoHeight) / 2, logoDrawWidth, logoHeight);
+    ctx.drawImage(logo, logoLeft, barY + (bottomBorder - logoDrawHeight) / 2, logoDrawWidth, logoDrawHeight);
   } else {
     ctx.fillStyle = brand.accentColor;
-    ctx.font = `760 ${Math.max(12, logoHeight)}px Inter, Arial, sans-serif`;
+    ctx.font = `760 ${Math.max(12, logoDrawHeight)}px Inter, Arial, sans-serif`;
     ctx.textAlign = "center";
     ctx.fillText(brand.name, logoCenterX, barY + bottomBorder / 2, logoMaxWidth);
   }
