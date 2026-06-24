@@ -6,7 +6,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "GR印迹",
   description: "相机照片边框水印生成器",
-  manifest: "/manifest.json",
+  manifest: "/gr-watermark/manifest.json",
 };
 
 export default function RootLayout({

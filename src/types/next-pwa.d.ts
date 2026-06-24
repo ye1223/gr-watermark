@@ -5,6 +5,7 @@ declare module "next-pwa" {
     dest: string;
     disable?: boolean;
     register?: boolean;
+    scope?: string;
     skipWaiting?: boolean;
   }): (config: NextConfig) => NextConfig;
 }
