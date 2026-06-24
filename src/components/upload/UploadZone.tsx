@@ -7,9 +7,11 @@ import { cn } from "@/lib/utils";
 
 export function UploadZone({
   onFile,
+  onPrepare,
   compact = false,
 }: {
   onFile: (file: File) => void;
+  onPrepare?: () => void;
   compact?: boolean;
 }) {
   const t = useTranslations("upload");
@@ -17,6 +19,7 @@ export function UploadZone({
   const [dragging, setDragging] = useState(false);
 
   function pickFile(event: ChangeEvent<HTMLInputElement>) {
+    onPrepare?.();
     const file = event.target.files?.[0];
     if (file) onFile(file);
     event.currentTarget.value = "";
@@ -24,6 +27,7 @@ export function UploadZone({
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
+    onPrepare?.();
     setDragging(false);
     const file = event.dataTransfer.files?.[0];
     if (file) onFile(file);
@@ -40,16 +44,25 @@ export function UploadZone({
       )}
       role="button"
       tabIndex={0}
-      onClick={() => inputRef.current?.click()}
+      onClick={() => {
+        onPrepare?.();
+        inputRef.current?.click();
+      }}
       onDragEnter={(event) => {
         event.preventDefault();
+        onPrepare?.();
         setDragging(true);
       }}
       onDragOver={(event) => event.preventDefault()}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
+      onFocus={onPrepare}
+      onPointerEnter={onPrepare}
       onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") inputRef.current?.click();
+        if (event.key === "Enter" || event.key === " ") {
+          onPrepare?.();
+          inputRef.current?.click();
+        }
       }}
     >
       <input

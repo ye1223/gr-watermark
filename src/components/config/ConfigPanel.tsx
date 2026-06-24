@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Card,
@@ -12,12 +12,15 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { WatermarkSettings } from "@/types/watermark";
+import { scheduleIdleTask } from "@/utils/preload";
 import { FrameStyleSelect } from "./FrameStyleSelect";
 import { RatioSelect } from "./RatioSelect";
 import { WatermarkToggle } from "./WatermarkToggle";
 
+const loadAdvancedSettings = () => import("./AdvancedSettings").then((mod) => mod.AdvancedSettings);
+
 const AdvancedSettings = dynamic(
-  () => import("./AdvancedSettings").then((mod) => mod.AdvancedSettings),
+  loadAdvancedSettings,
   {
     ssr: false,
     loading: () => <div className="h-72 animate-pulse rounded-lg bg-muted/40" />,
@@ -33,6 +36,12 @@ export function ConfigPanel({
 }) {
   const t = useTranslations("config");
   const [activeTab, setActiveTab] = useState<"output" | "metadata">("output");
+
+  useEffect(() => {
+    return scheduleIdleTask(() => {
+      void loadAdvancedSettings();
+    }, 1800);
+  }, []);
 
   return (
     <aside className="min-h-0 rounded-xl border bg-card shadow-sm md:h-[calc(100vh-5.5rem)] md:overflow-y-auto">
@@ -56,7 +65,19 @@ export function ConfigPanel({
               )}
               role="tab"
               type="button"
-              onClick={() => setActiveTab(tab)}
+              onFocus={() => {
+                if (tab === "metadata") void loadAdvancedSettings();
+              }}
+              onClick={() => {
+                if (tab === "metadata") void loadAdvancedSettings();
+                setActiveTab(tab);
+              }}
+              onPointerEnter={() => {
+                if (tab === "metadata") void loadAdvancedSettings();
+              }}
+              onPointerDown={() => {
+                if (tab === "metadata") void loadAdvancedSettings();
+              }}
             >
               {tab === "output" ? t("outputTab") : t("metadataTab")}
             </button>

@@ -10,6 +10,7 @@ import { getNearestOutputRatio } from "@/hooks/useCrop";
 import { normalizeImageFile, parseExif } from "@/hooks/useExif";
 import { useWatermark } from "@/hooks/useWatermark";
 import type { ImageSource } from "@/types/watermark";
+import { preloadCanvasRenderer, preloadExifParser, scheduleIdleTask } from "@/utils/preload";
 
 const ActionButtons = dynamic(
   () => import("./actions/ActionButtons").then((mod) => mod.ActionButtons),
@@ -45,13 +46,21 @@ export function WatermarkApp() {
   const [imageSource, setImageSource] = useState<ImageSource | null>(null);
   const [rendering, setRendering] = useState(false);
 
+  useEffect(() => {
+    return scheduleIdleTask(() => {
+      void preloadCanvasRenderer();
+      void preloadExifParser();
+    });
+  }, []);
+
   const handleFile = useCallback(async (inputFile: File) => {
     setRendering(true);
     try {
+      void preloadCanvasRenderer();
+      const exifPromise = parseExif(inputFile);
       const normalized = await normalizeImageFile(inputFile);
       const url = URL.createObjectURL(normalized);
-      const { width, height } = await getImageSize(url);
-      const exif = await parseExif(inputFile);
+      const [{ width, height }, exif] = await Promise.all([getImageSize(url), exifPromise]);
       const brand = getBrand(settings.brandId);
 
       updateSettings({ outputRatio: getNearestOutputRatio(width, height) });

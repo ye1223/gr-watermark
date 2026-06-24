@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { getBrand } from "@/brands.config";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ImageSource, WatermarkSettings } from "@/types/watermark";
+import { preloadCanvasRenderer } from "@/utils/preload";
 import { UploadZone } from "../upload/UploadZone";
 
 export function WatermarkPreview({
@@ -30,7 +31,7 @@ export function WatermarkPreview({
       setLocalRendering(true);
       const brand = getBrand(settings.brandId);
       try {
-        const { drawWatermarkCanvas, loadImageElement } = await import("@/utils/canvasRenderer");
+        const { drawWatermarkCanvas, loadImageElement } = await preloadCanvasRenderer();
         const image = await loadImageElement(imageSource.url);
         if (cancelled || !canvasRef.current) return;
         const logo = await loadImageElement(brand.logo).catch(() => null);
@@ -76,7 +77,7 @@ export function WatermarkPreview({
       </div>
       <div className="relative flex min-h-0 flex-1 items-center justify-center p-4 md:p-6">
         {!imageSource ? (
-          <UploadZone compact onFile={onFile} />
+          <UploadZone compact onFile={onFile} onPrepare={preloadCanvasRenderer} />
         ) : (
           <div className="relative mx-auto flex max-h-[calc(100vh-12rem)] w-full items-center justify-center">
             {isBusy ? (

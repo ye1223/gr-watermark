@@ -1,4 +1,5 @@
 import type { ParsedExif } from "@/types/watermark";
+import { preloadExifParser } from "@/utils/preload";
 
 function formatNumber(value: unknown, digits = 1) {
   if (typeof value !== "number" || Number.isNaN(value)) return undefined;
@@ -30,7 +31,7 @@ function formatDate(value: unknown) {
 
 export async function parseExif(file: File): Promise<ParsedExif> {
   try {
-    const exifr = await import("exifr");
+    const exifr = await preloadExifParser();
     const data = await exifr.parse(file, {
       pick: [
         "Model",
