@@ -33,7 +33,11 @@ export function AdvancedSettings({
               key={tone}
               className={`h-9 justify-center text-xs uppercase ${
                 settings.borderTone === tone ? "border-primary ring-2 ring-primary/20" : ""
-              } ${tone === "black" ? "bg-zinc-950 text-white hover:bg-zinc-900" : "bg-white text-zinc-950 hover:bg-zinc-100"}`}
+              } ${
+                tone === "black"
+                  ? "bg-zinc-950 text-white hover:bg-zinc-900 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900"
+                  : "bg-white text-zinc-950 hover:bg-zinc-100 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
+              }`}
               type="button"
               variant="outline"
               onClick={() => updateSettings({ borderTone: tone })}
