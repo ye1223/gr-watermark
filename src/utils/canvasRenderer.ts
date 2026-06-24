@@ -168,12 +168,12 @@ export function drawWatermarkCanvas({
     ctx.font = `650 ${rightSize}px Inter, Arial, sans-serif`;
     ctx.textAlign = "right";
     if (params.length) {
-      ctx.fillText(params.join(" "), rightTextX, barY + bottomBorder * (date ? 0.36 : 0.5), rightWidth);
+      ctx.fillText(params.join(" "), rightTextX, barY + bottomBorder * (date ? 0.39 : 0.5), rightWidth);
     }
     if (date) {
       ctx.fillStyle = colors.muted;
       ctx.font = `400 ${smallSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(date, rightTextX, barY + bottomBorder * (params.length ? 0.68 : 0.5), rightWidth);
+      ctx.fillText(date, rightTextX, barY + bottomBorder * (params.length ? 0.61 : 0.5), rightWidth);
     }
   }
 }

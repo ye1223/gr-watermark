@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -15,6 +14,8 @@ export function Header() {
   const t = useTranslations("header");
   const locale = useLocale();
   const nextLocale = locale === "zh" ? "en" : "zh";
+  const primaryMark = nextLocale === "zh" ? "中" : "A";
+  const secondaryMark = nextLocale === "zh" ? "A" : "中";
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b bg-background/85 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:px-4">
@@ -32,12 +33,19 @@ export function Header() {
           <TooltipTrigger asChild>
             <Button
               asChild
-              className="text-muted-foreground hover:text-foreground"
-              size="icon-sm"
+              className="size-7 rounded-md border bg-muted text-muted-foreground hover:bg-background hover:text-foreground"
+              size="icon"
               variant="ghost"
             >
               <Link aria-label={t("language")} href={`/${nextLocale}`}>
-                <Languages className="size-3.5" />
+                <span aria-hidden className="relative block size-4">
+                  <span className="absolute left-0 top-0 font-mono text-[12px] font-semibold leading-none">
+                    {primaryMark}
+                  </span>
+                  <span className="absolute bottom-0 right-0 rounded-[3px] bg-background px-[2px] font-mono text-[7px] font-semibold leading-[9px] text-primary shadow-sm">
+                    {secondaryMark}
+                  </span>
+                </span>
               </Link>
             </Button>
           </TooltipTrigger>
