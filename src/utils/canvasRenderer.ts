@@ -55,9 +55,10 @@ export function drawWatermarkCanvas({
   const baseWidth = Math.round(crop.sw);
   const baseHeight = Math.round(crop.sh);
   const hasWatermark = settings.watermark;
-  const topBorder = hasWatermark ? Math.round(baseHeight * style.top) : 0;
-  const sideBorder = hasWatermark ? Math.round(baseWidth * style.side) : 0;
-  const bottomBorder = hasWatermark ? Math.round(baseHeight * style.bottom) : 0;
+  const frameBase = Math.min(baseWidth, baseHeight);
+  const topBorder = hasWatermark ? Math.round(frameBase * style.top) : 0;
+  const sideBorder = hasWatermark ? Math.round(frameBase * style.side) : 0;
+  const bottomBorder = hasWatermark ? Math.round(frameBase * style.bottom) : 0;
   const outputWidth = baseWidth + sideBorder * 2;
   const outputHeight = baseHeight + topBorder + bottomBorder;
   const ctx = canvas.getContext("2d");
