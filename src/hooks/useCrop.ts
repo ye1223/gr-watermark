@@ -1,14 +1,20 @@
-import { outputRatios, type OutputRatio } from "@/types/watermark";
+import { outputRatios, type OutputRatio, type WatermarkSettings } from "@/types/watermark";
+
+function clamp(value: number, min = 0, max = 1) {
+  return Math.min(max, Math.max(min, value));
+}
 
 export function ratioToNumber(ratio: OutputRatio, fallback: number) {
+  if (ratio === "ORIGINAL") return fallback;
   const [width, height] = ratio.split(":").map(Number);
   return width && height ? width / height : fallback;
 }
 
-export function getCenteredCrop(
+export function getCrop(
   imageWidth: number,
   imageHeight: number,
-  targetRatio: OutputRatio
+  targetRatio: OutputRatio,
+  cropOffset: WatermarkSettings["cropOffset"] = { x: 0.5, y: 0.5 }
 ) {
   const sourceRatio = imageWidth / imageHeight;
   const ratio = ratioToNumber(targetRatio, sourceRatio);
@@ -19,20 +25,39 @@ export function getCenteredCrop(
 
   if (sourceRatio > ratio) {
     const sw = imageHeight * ratio;
-    return { sx: (imageWidth - sw) / 2, sy: 0, sw, sh: imageHeight };
+    return {
+      sx: (imageWidth - sw) * clamp(cropOffset.x),
+      sy: 0,
+      sw,
+      sh: imageHeight,
+    };
   }
 
   const sh = imageWidth / ratio;
-  return { sx: 0, sy: (imageHeight - sh) / 2, sw: imageWidth, sh };
+  return {
+    sx: 0,
+    sy: (imageHeight - sh) * clamp(cropOffset.y),
+    sw: imageWidth,
+    sh,
+  };
+}
+
+export function getCenteredCrop(
+  imageWidth: number,
+  imageHeight: number,
+  targetRatio: OutputRatio
+) {
+  return getCrop(imageWidth, imageHeight, targetRatio);
 }
 
 export function getNearestOutputRatio(imageWidth: number, imageHeight: number): OutputRatio {
   const sourceRatio = imageWidth / imageHeight;
+  const fixedRatios = outputRatios.filter((ratio) => ratio !== "ORIGINAL");
 
-  return outputRatios.reduce((nearest, ratio) => {
+  return fixedRatios.reduce((nearest, ratio) => {
     const currentDistance = Math.abs(Math.log(ratioToNumber(ratio, sourceRatio) / sourceRatio));
     const nearestDistance = Math.abs(Math.log(ratioToNumber(nearest, sourceRatio) / sourceRatio));
 
     return currentDistance < nearestDistance ? ratio : nearest;
-  }, outputRatios[0]);
+  }, fixedRatios[0]);
 }

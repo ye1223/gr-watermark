@@ -1,12 +1,8 @@
-export type FrameStyle =
-  | "ORIGINAL"
-  | "CLASSIC"
-  | "MINIMAL"
-  | "INSTAX_MINI"
-  | "INSTAX_SQUARE"
-  | "INSTAX_WIDE"
-  | "POLAROID";
+import { framePresets, type FramePresetId } from "@/presets.config";
+
+export type FrameStyle = FramePresetId;
 export const outputRatios = [
+  "ORIGINAL",
   "3:2",
   "2:3",
   "4:3",
@@ -23,8 +19,12 @@ export type BorderTone = "white" | "black";
 export interface WatermarkSettings {
   frameStyle: FrameStyle;
   outputRatio: OutputRatio;
+  borderScale: number;
+  frameBorderScale: { top: number; side: number; bottom: number };
   watermark: boolean;
+  filmWatermark: boolean;
   cardMode: boolean;
+  cropOffset: { x: number; y: number };
   brandId: string;
   borderTone: BorderTone;
   showModel: boolean;
@@ -59,11 +59,5 @@ export interface ParsedExif {
 }
 
 export const frameStyles: FrameStyle[] = [
-  "ORIGINAL",
-  "CLASSIC",
-  "MINIMAL",
-  "INSTAX_MINI",
-  "INSTAX_SQUARE",
-  "INSTAX_WIDE",
-  "POLAROID",
+  ...framePresets.map((preset) => preset.id),
 ];

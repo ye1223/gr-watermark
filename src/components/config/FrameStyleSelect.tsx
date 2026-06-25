@@ -3,7 +3,8 @@
 import { ChevronDown, CircleDot } from "lucide-react";
 import { type ChangeEvent } from "react";
 import { useTranslations } from "next-intl";
-import { frameStyles, type FrameStyle } from "@/types/watermark";
+import { framePresets, presetGroups } from "@/presets.config";
+import type { FrameStyle } from "@/types/watermark";
 import { FieldRow } from "./FieldRow";
 
 export function FrameStyleSelect({
@@ -27,10 +28,16 @@ export function FrameStyleSelect({
           value={value}
           onChange={handleChange}
         >
-          {frameStyles.map((style) => (
-            <option key={style} value={style}>
-              {t(`presets.${style}`)}
-            </option>
+          {presetGroups.map((group) => (
+            <optgroup key={group.id} label={`── ${t(group.labelKey)} ──`}>
+              {framePresets
+                .filter((preset) => preset.group === group.id)
+                .map((preset) => (
+                  <option key={preset.id} value={preset.id}>
+                    {preset.name}
+                  </option>
+                ))}
+            </optgroup>
           ))}
         </select>
         <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

@@ -8,9 +8,13 @@ import { FieldRow } from "./FieldRow";
 
 export function RatioSelect({
   value,
+  disabled = false,
+  help,
   onChange,
 }: {
   value: OutputRatio;
+  disabled?: boolean;
+  help?: string;
   onChange: (value: OutputRatio) => void;
 }) {
   const t = useTranslations();
@@ -19,11 +23,13 @@ export function RatioSelect({
   }
 
   return (
-    <FieldRow icon={<Type className="size-3.5" />} label={t("config.outputRatio")}>
+    <FieldRow help={help} icon={<Type className="size-3.5" />} label={t("config.outputRatio")}>
       <div className="relative">
         <select
           aria-label={t("config.outputRatio")}
-          className="h-9 w-full appearance-none rounded-lg border border-input bg-background px-3 pr-8 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+          className="h-9 w-full appearance-none rounded-lg border border-input bg-background px-3 pr-8 text-sm outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+          disabled={disabled}
+          title={help}
           value={value}
           onChange={handleChange}
         >

@@ -10,7 +10,8 @@
     "formats": "Drop, paste, or choose JPG / PNG / WEBP / HEIC"
   },
   "preview": {
-    "title": "Canvas preview"
+    "title": "Canvas preview",
+    "cropHint": "Drag image to adjust composition"
   },
   "config": {
     "title": "Watermark settings",
@@ -20,6 +21,16 @@
     "watermarkOverlay": "Watermark overlay",
     "cardMode": "Card mode",
     "cardModeHint": "Exports as PNG and keeps a transparent background.",
+    "borderHeight": "Border height",
+    "watermarkBarHeight": "Watermark bar height",
+    "frameBorderWidth": "Frame border width",
+    "borderTop": "Top",
+    "borderSides": "Left / right",
+    "borderBottom": "Bottom",
+    "lockedBorder": "Preset border",
+    "lockedPresetHint": "Current preset locks the ratio",
+    "filmWatermark": "Film watermark",
+    "filmWatermarkHint": "Adds a restrained metadata watermark inside the film bottom border.",
     "outputTab": "Output",
     "metadataTab": "Watermark info",
     "outputDescription": "Choose frame, border, and export ratio",
@@ -45,15 +56,21 @@
     "share": "Share"
   },
   "presets": {
-    "ORIGINAL": "NO FRAME",
     "CLASSIC": "CLASSIC",
     "MINIMAL": "MINIMAL",
+    "FRAME": "FRAME",
     "INSTAX_MINI": "instax mini",
     "INSTAX_SQUARE": "instax square",
     "INSTAX_WIDE": "instax wide",
     "POLAROID": "POLAROID"
   },
+  "presetGroups": {
+    "basic": "Basic",
+    "frame": "Frame",
+    "film": "Film simulation"
+  },
   "ratio": {
+    "ORIGINAL": "Original",
     "3:2": "3:2",
     "2:3": "2:3",
     "4:3": "4:3",

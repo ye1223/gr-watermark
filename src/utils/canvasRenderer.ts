@@ -1,21 +1,12 @@
 import type { BrandConfig } from "@/brands.config";
-import { getCenteredCrop } from "@/hooks/useCrop";
-import type { BorderTone, FrameStyle, ImageSource, WatermarkSettings } from "@/types/watermark";
-
-const frameMap: Record<FrameStyle, { top: number; side: number; bottom: number }> = {
-  ORIGINAL: { top: 0, side: 0, bottom: 0 },
-  CLASSIC: { top: 0, side: 0, bottom: 0.074 },
-  MINIMAL: { top: 0, side: 0, bottom: 0.052 },
-  INSTAX_MINI: { top: 0.035, side: 0.035, bottom: 0.2 },
-  INSTAX_SQUARE: { top: 0.035, side: 0.035, bottom: 0.18 },
-  INSTAX_WIDE: { top: 0.028, side: 0.028, bottom: 0.15 },
-  POLAROID: { top: 0.03, side: 0.03, bottom: 0.19 },
-};
+import { getCrop, ratioToNumber } from "@/hooks/useCrop";
+import { getFramePreset } from "@/presets.config";
+import type { BorderTone, ImageSource, OutputRatio, WatermarkSettings } from "@/types/watermark";
 
 function toneColors(tone: BorderTone) {
   return tone === "black"
-    ? { bg: "#080808", fg: "#f7f7f7", muted: "rgba(247,247,247,0.62)", line: "rgba(247,247,247,0.24)" }
-    : { bg: "#ffffff", fg: "#111111", muted: "rgba(17,17,17,0.58)", line: "rgba(17,17,17,0.18)" };
+    ? { bg: "#11100e", fg: "#f4efe7", muted: "rgba(244,239,231,0.64)", line: "rgba(244,239,231,0.24)" }
+    : { bg: "#f7f3ec", fg: "#15130f", muted: "rgba(21,19,15,0.58)", line: "rgba(21,19,15,0.18)" };
 }
 
 function fitFont(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, size: number, weight = 600) {
@@ -26,6 +17,85 @@ function fitFont(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, 
     next -= 1;
   } while (next > 9);
   return next;
+}
+
+function clamp(value: number, min = 0, max = 1) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function getEffectiveRatio(settings: WatermarkSettings): OutputRatio {
+  const preset = getFramePreset(settings.frameStyle);
+  return preset.lockRatio && preset.canvasRatio ? preset.canvasRatio : settings.outputRatio;
+}
+
+function getBorderRatios(settings: WatermarkSettings) {
+  const preset = getFramePreset(settings.frameStyle);
+  if (!settings.watermark) {
+    return { top: 0, right: 0, bottom: 0, left: 0 };
+  }
+
+  const scale = preset.lockRatio || preset.group === "frame" ? 1 : settings.borderScale;
+  const frameScale = settings.frameBorderScale;
+
+  return {
+    top: clamp(preset.border.top * scale * (preset.group === "frame" ? frameScale.top : 1), 0, 0.35),
+    right: clamp(preset.border.right * scale * (preset.group === "frame" ? frameScale.side : 1), 0, 0.35),
+    bottom: clamp(preset.border.bottom * scale * (preset.group === "frame" ? frameScale.bottom : 1), 0, 0.4),
+    left: clamp(preset.border.left * scale * (preset.group === "frame" ? frameScale.side : 1), 0, 0.35),
+  };
+}
+
+function getLayout({
+  imageWidth,
+  imageHeight,
+  settings,
+}: {
+  imageWidth: number;
+  imageHeight: number;
+  settings: WatermarkSettings;
+}) {
+  const border = getBorderRatios(settings);
+  const effectiveRatio = getEffectiveRatio(settings);
+  const imageWidthFraction = Math.max(0.2, 1 - border.left - border.right);
+  const imageHeightFraction = Math.max(0.2, 1 - border.top - border.bottom);
+
+  if (effectiveRatio === "ORIGINAL") {
+    const baseWidth = imageWidth;
+    const baseHeight = imageHeight;
+    return {
+      crop: { sx: 0, sy: 0, sw: imageWidth, sh: imageHeight },
+      outputWidth: Math.round(baseWidth / imageWidthFraction),
+      outputHeight: Math.round(baseHeight / imageHeightFraction),
+      imageX: Math.round((baseWidth / imageWidthFraction) * border.left),
+      imageY: Math.round((baseHeight / imageHeightFraction) * border.top),
+      imageWidth: baseWidth,
+      imageHeight: baseHeight,
+      border,
+      effectiveRatio,
+    };
+  }
+
+  const canvasRatio = ratioToNumber(effectiveRatio, imageWidth / imageHeight);
+  const imageAreaRatio = canvasRatio * (imageWidthFraction / imageHeightFraction);
+  const crop = getCrop(imageWidth, imageHeight, `${imageAreaRatio}:1` as OutputRatio, settings.cropOffset);
+  const outputWidth = Math.round(crop.sw / imageWidthFraction);
+  const outputHeight = Math.round(crop.sh / imageHeightFraction);
+  const imageX = Math.round(outputWidth * border.left);
+  const imageY = Math.round(outputHeight * border.top);
+  const drawWidth = outputWidth - imageX - Math.round(outputWidth * border.right);
+  const drawHeight = outputHeight - imageY - Math.round(outputHeight * border.bottom);
+
+  return {
+    crop,
+    outputWidth,
+    outputHeight,
+    imageX,
+    imageY,
+    imageWidth: drawWidth,
+    imageHeight: drawHeight,
+    border,
+    effectiveRatio,
+  };
 }
 
 function applyCardMode({
@@ -52,6 +122,7 @@ function applyCardMode({
   const y = padTop;
   const outerWidth = contentWidth + padX * 2;
   const outerHeight = contentHeight + padTop + padBottom;
+  const colors = toneColors(settings.borderTone);
   const shadowStrong =
     settings.borderTone === "black" ? "rgba(0,0,0,0.58)" : "rgba(15,23,42,0.24)";
   const shadowSoft =
@@ -69,7 +140,7 @@ function applyCardMode({
   ctx.shadowColor = shadowSoft;
   ctx.shadowBlur = shadowBlur * 1.6;
   ctx.shadowOffsetY = shadowOffsetY * 1.5;
-  ctx.fillStyle = settings.borderTone === "black" ? "#080808" : "#ffffff";
+  ctx.fillStyle = colors.bg;
   ctx.fillRect(x, y, contentWidth, contentHeight);
   ctx.restore();
 
@@ -77,7 +148,7 @@ function applyCardMode({
   ctx.shadowColor = shadowStrong;
   ctx.shadowBlur = shadowBlur;
   ctx.shadowOffsetY = shadowOffsetY;
-  ctx.fillStyle = settings.borderTone === "black" ? "#080808" : "#ffffff";
+  ctx.fillStyle = colors.bg;
   ctx.fillRect(x, y, contentWidth, contentHeight);
   ctx.restore();
 
@@ -110,17 +181,22 @@ export function drawWatermarkCanvas({
   brand: BrandConfig;
   logo?: HTMLImageElement | null;
 }) {
-  const crop = getCenteredCrop(image.naturalWidth, image.naturalHeight, settings.outputRatio);
-  const style = frameMap[settings.frameStyle];
-  const baseWidth = Math.round(crop.sw);
-  const baseHeight = Math.round(crop.sh);
-  const hasWatermark = settings.watermark;
-  const frameBase = Math.min(baseWidth, baseHeight);
-  const topBorder = hasWatermark ? Math.round(frameBase * style.top) : 0;
-  const sideBorder = hasWatermark ? Math.round(frameBase * style.side) : 0;
-  const bottomBorder = hasWatermark ? Math.round(frameBase * style.bottom) : 0;
-  const outputWidth = baseWidth + sideBorder * 2;
-  const outputHeight = baseHeight + topBorder + bottomBorder;
+  const preset = getFramePreset(settings.frameStyle);
+  const layout = getLayout({
+    imageWidth: image.naturalWidth,
+    imageHeight: image.naturalHeight,
+    settings,
+  });
+  const { crop } = layout;
+  const baseWidth = layout.imageWidth;
+  const baseHeight = layout.imageHeight;
+  const topBorder = layout.imageY;
+  const leftBorder = layout.imageX;
+  const bottomBorder = layout.outputHeight - layout.imageY - layout.imageHeight;
+  const outputWidth = layout.outputWidth;
+  const outputHeight = layout.outputHeight;
+  const isFilmWatermark = preset.group === "film" && settings.filmWatermark;
+  const hasWatermark = settings.watermark && (preset.showWatermarkBar || isFilmWatermark);
   const contentCanvas = settings.cardMode ? document.createElement("canvas") : canvas;
 
   contentCanvas.width = outputWidth;
@@ -141,7 +217,7 @@ export function drawWatermarkCanvas({
     crop.sy,
     crop.sw,
     crop.sh,
-    sideBorder,
+    leftBorder,
     topBorder,
     baseWidth,
     baseHeight
@@ -152,11 +228,16 @@ export function drawWatermarkCanvas({
     return;
   }
 
-  const barY = topBorder + baseHeight;
-  const padX = Math.max(24, outputWidth * 0.05);
+  const barHeight = isFilmWatermark
+    ? Math.max(34, Math.min(bottomBorder * 0.42, outputWidth * 0.075))
+    : bottomBorder;
+  const barY = isFilmWatermark
+    ? topBorder + baseHeight + bottomBorder * 0.54 - barHeight / 2
+    : topBorder + baseHeight;
+  const padX = Math.max(24, outputWidth * (isFilmWatermark ? 0.08 : 0.05));
   const gap = Math.max(12, outputWidth * 0.018);
-  const logoMaxWidth = outputWidth * 0.18;
-  const logoMaxHeight = Math.max(18, bottomBorder * 0.3);
+  const logoMaxWidth = outputWidth * (isFilmWatermark ? 0.16 : 0.18);
+  const logoMaxHeight = Math.max(16, barHeight * (isFilmWatermark ? 0.32 : 0.3));
   const logoNaturalRatio =
     logo && logo.naturalWidth > 0 && logo.naturalHeight > 0
       ? logo.naturalWidth / logo.naturalHeight
@@ -168,7 +249,7 @@ export function drawWatermarkCanvas({
       : { width: logoMaxHeight * logoRatio, height: logoMaxHeight };
   const logoDrawWidth = logoSize.width;
   const logoDrawHeight = logoSize.height;
-  const logoCenterX = outputWidth * 0.57;
+  const logoCenterX = outputWidth * (isFilmWatermark ? 0.56 : 0.57);
   const logoLeft = logoCenterX - logoDrawWidth / 2;
   const logoRight = logoCenterX + logoDrawWidth / 2;
   const separatorX = Math.min(outputWidth - padX * 0.35, logoRight + gap);
@@ -177,20 +258,20 @@ export function drawWatermarkCanvas({
   const leftWidth = Math.max(90, logoLeft - padX - gap);
 
   ctx.fillStyle = colors.bg;
-  ctx.fillRect(0, barY, outputWidth, bottomBorder);
+  ctx.fillRect(0, barY, outputWidth, barHeight);
 
   const title = settings.showModel ? settings.model || brand.defaultModel : "";
   const date = settings.showDate ? settings.date : "";
   const subtitle = settings.showSubtitle ? settings.subtitle : "";
-  const titleSize = fitFont(ctx, title || " ", leftWidth, Math.max(14, bottomBorder * 0.22), 650);
-  const smallSize = Math.max(10, bottomBorder * 0.13);
+  const titleSize = fitFont(ctx, title || " ", leftWidth, Math.max(13, barHeight * 0.22), 650);
+  const smallSize = Math.max(9, barHeight * 0.13);
   const rightSize = fitFont(
     ctx,
     [settings.focalLength, settings.aperture, settings.shutter, settings.iso ? `ISO${settings.iso}` : ""]
       .filter(Boolean)
       .join(" "),
     rightWidth,
-    Math.max(14, bottomBorder * 0.22),
+    Math.max(13, barHeight * 0.22),
     650
   );
 
@@ -199,26 +280,26 @@ export function drawWatermarkCanvas({
   ctx.textAlign = "left";
   if (title) {
     ctx.font = `650 ${titleSize}px Inter, Arial, sans-serif`;
-    ctx.fillText(title, padX, barY + bottomBorder * (subtitle ? 0.39 : 0.5), leftWidth);
+    ctx.fillText(title, padX, barY + barHeight * (subtitle ? 0.39 : 0.5), leftWidth);
   }
   ctx.fillStyle = colors.muted;
   ctx.font = `400 ${smallSize}px Inter, Arial, sans-serif`;
-  if (subtitle) ctx.fillText(subtitle, padX, barY + bottomBorder * (title ? 0.61 : 0.5), leftWidth);
+  if (subtitle) ctx.fillText(subtitle, padX, barY + barHeight * (title ? 0.61 : 0.5), leftWidth);
 
   if (logo) {
-    ctx.drawImage(logo, logoLeft, barY + (bottomBorder - logoDrawHeight) / 2, logoDrawWidth, logoDrawHeight);
+    ctx.drawImage(logo, logoLeft, barY + (barHeight - logoDrawHeight) / 2, logoDrawWidth, logoDrawHeight);
   } else {
     ctx.fillStyle = brand.accentColor;
     ctx.font = `760 ${Math.max(12, logoDrawHeight)}px Inter, Arial, sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillText(brand.name, logoCenterX, barY + bottomBorder / 2, logoMaxWidth);
+    ctx.fillText(brand.name, logoCenterX, barY + barHeight / 2, logoMaxWidth);
   }
 
   ctx.strokeStyle = colors.line;
   ctx.lineWidth = Math.max(1, outputWidth * 0.0014);
   ctx.beginPath();
-  ctx.moveTo(separatorX, barY + bottomBorder * 0.23);
-  ctx.lineTo(separatorX, barY + bottomBorder * 0.77);
+  ctx.moveTo(separatorX, barY + barHeight * 0.23);
+  ctx.lineTo(separatorX, barY + barHeight * 0.77);
   ctx.stroke();
 
   const params = settings.showExif
@@ -234,12 +315,12 @@ export function drawWatermarkCanvas({
     ctx.font = `650 ${rightSize}px Inter, Arial, sans-serif`;
     ctx.textAlign = "right";
     if (params.length) {
-      ctx.fillText(params.join(" "), rightTextX, barY + bottomBorder * (date ? 0.39 : 0.5), rightWidth);
+      ctx.fillText(params.join(" "), rightTextX, barY + barHeight * (date ? 0.39 : 0.5), rightWidth);
     }
     if (date) {
       ctx.fillStyle = colors.muted;
       ctx.font = `400 ${smallSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(date, rightTextX, barY + bottomBorder * (params.length ? 0.61 : 0.5), rightWidth);
+      ctx.fillText(date, rightTextX, barY + barHeight * (params.length ? 0.61 : 0.5), rightWidth);
     }
   }
 

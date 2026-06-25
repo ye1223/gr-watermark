@@ -11,8 +11,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { getFramePreset } from "@/presets.config";
 import type { WatermarkSettings } from "@/types/watermark";
 import { scheduleIdleTask } from "@/utils/preload";
+import { BorderControls } from "./BorderHeightSlider";
 import { FrameStyleSelect } from "./FrameStyleSelect";
 import { RatioSelect } from "./RatioSelect";
 import { WatermarkToggle } from "./WatermarkToggle";
@@ -36,6 +38,8 @@ export function ConfigPanel({
 }) {
   const t = useTranslations("config");
   const [activeTab, setActiveTab] = useState<"output" | "metadata">("output");
+  const selectedPreset = getFramePreset(settings.frameStyle);
+  const lockedHint = selectedPreset.lockRatio ? t("lockedPresetHint") : undefined;
 
   useEffect(() => {
     return scheduleIdleTask(() => {
@@ -96,14 +100,33 @@ export function ConfigPanel({
                 onChange={(frameStyle) => updateSettings({ frameStyle })}
               />
               <RatioSelect
+                disabled={selectedPreset.lockRatio}
+                help={lockedHint}
                 value={settings.outputRatio}
                 onChange={(outputRatio) => updateSettings({ outputRatio })}
+              />
+              <BorderControls
+                disabled={selectedPreset.lockRatio}
+                group={selectedPreset.group}
+                borderScale={settings.borderScale}
+                frameBorderScale={settings.frameBorderScale}
+                help={lockedHint}
+                onBorderScaleChange={(borderScale) => updateSettings({ borderScale })}
+                onFrameBorderScaleChange={(frameBorderScale) => updateSettings({ frameBorderScale })}
               />
               <WatermarkToggle
                 checked={settings.watermark}
                 label={t("watermarkOverlay")}
                 onChange={(watermark) => updateSettings({ watermark })}
               />
+              {selectedPreset.group === "film" ? (
+                <WatermarkToggle
+                  checked={settings.filmWatermark}
+                  help={t("filmWatermarkHint")}
+                  label={t("filmWatermark")}
+                  onChange={(filmWatermark) => updateSettings({ filmWatermark })}
+                />
+              ) : null}
               <WatermarkToggle
                 checked={settings.cardMode}
                 help={t("cardModeHint")}

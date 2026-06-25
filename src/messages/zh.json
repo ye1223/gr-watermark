@@ -10,7 +10,8 @@
     "formats": "拖拽、粘贴或点击选择 JPG / PNG / WEBP / HEIC"
   },
   "preview": {
-    "title": "画布预览"
+    "title": "画布预览",
+    "cropHint": "拖动图片调整构图"
   },
   "config": {
     "title": "水印设置",
@@ -20,6 +21,16 @@
     "watermarkOverlay": "水印叠加",
     "cardMode": "卡片模式",
     "cardModeHint": "开启后导出 PNG，并保留透明背景。",
+    "borderHeight": "边框高度",
+    "watermarkBarHeight": "水印条高度",
+    "frameBorderWidth": "边框宽度",
+    "borderTop": "上边",
+    "borderSides": "左右",
+    "borderBottom": "底部",
+    "lockedBorder": "预设边框",
+    "lockedPresetHint": "当前预设已锁定比例",
+    "filmWatermark": "胶片水印",
+    "filmWatermarkHint": "在胶片底部白边中加入更克制的参数水印。",
     "outputTab": "输出",
     "metadataTab": "水印信息",
     "outputDescription": "选择画幅、边框与导出比例",
@@ -45,15 +56,21 @@
     "share": "分享"
   },
   "presets": {
-    "ORIGINAL": "无边框",
     "CLASSIC": "CLASSIC",
     "MINIMAL": "MINIMAL",
+    "FRAME": "FRAME",
     "INSTAX_MINI": "instax mini",
     "INSTAX_SQUARE": "instax square",
     "INSTAX_WIDE": "instax wide",
     "POLAROID": "POLAROID"
   },
+  "presetGroups": {
+    "basic": "基础",
+    "frame": "边框",
+    "film": "胶片模拟"
+  },
   "ratio": {
+    "ORIGINAL": "原始比例",
     "3:2": "3:2",
     "2:3": "2:3",
     "4:3": "4:3",

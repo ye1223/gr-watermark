@@ -9,6 +9,7 @@ import { getBrand } from "@/brands.config";
 import { getNearestOutputRatio } from "@/hooks/useCrop";
 import { normalizeImageFile, parseExif } from "@/hooks/useExif";
 import { useWatermark } from "@/hooks/useWatermark";
+import { getFramePreset } from "@/presets.config";
 import type { ImageSource } from "@/types/watermark";
 import { preloadCanvasRenderer, preloadExifParser, scheduleIdleTask } from "@/utils/preload";
 
@@ -62,8 +63,12 @@ export function WatermarkApp() {
       const url = URL.createObjectURL(normalized);
       const [{ width, height }, exif] = await Promise.all([getImageSize(url), exifPromise]);
       const brand = getBrand(settings.brandId);
+      const preset = getFramePreset(settings.frameStyle);
+      const outputRatio = preset.lockRatio && preset.canvasRatio
+        ? preset.canvasRatio
+        : getNearestOutputRatio(width, height);
 
-      updateSettings({ outputRatio: getNearestOutputRatio(width, height) });
+      updateSettings({ outputRatio });
       applyExif({
         ...exif,
         model: exif.model || brand.defaultModel,
@@ -86,7 +91,7 @@ export function WatermarkApp() {
     } finally {
       setRendering(false);
     }
-  }, [applyExif, settings.brandId, updateSettings]);
+  }, [applyExif, settings.brandId, settings.frameStyle, updateSettings]);
 
   useEffect(() => {
     function handlePaste(event: ClipboardEvent) {
@@ -121,6 +126,7 @@ export function WatermarkApp() {
             imageSource={imageSource}
             rendering={rendering}
             settings={settings}
+            updateSettings={updateSettings}
             onFile={handleFile}
           />
           <ActionButtons imageSource={imageSource} settings={settings} onClear={clearImage} />

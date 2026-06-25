@@ -35,8 +35,8 @@ export function AdvancedSettings({
                 settings.borderTone === tone ? "border-primary ring-2 ring-primary/20" : ""
               } ${
                 tone === "black"
-                  ? "bg-zinc-950 text-white hover:bg-zinc-900 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900"
-                  : "bg-white text-zinc-950 hover:bg-zinc-100 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
+                  ? "bg-[#11100e] text-[#f4efe7] hover:bg-[#181612] hover:text-[#f4efe7] dark:bg-[#11100e] dark:text-[#f4efe7] dark:hover:bg-[#181612] dark:hover:text-[#f4efe7]"
+                  : "bg-[#f7f3ec] text-[#15130f] hover:bg-[#eee8dd] hover:text-[#15130f] dark:bg-[#f7f3ec] dark:text-[#15130f] dark:hover:bg-[#eee8dd] dark:hover:text-[#15130f]"
               }`}
               type="button"
               variant="outline"
