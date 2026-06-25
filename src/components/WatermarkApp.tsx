@@ -1,11 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { ConfigPanel } from "@/components/config/ConfigPanel";
 import { Header } from "@/components/layout/Header";
 import { WatermarkPreview } from "@/components/preview/WatermarkPreview";
-import { getBrand } from "@/brands.config";
+import { detectBrandFromCamera, getBrand } from "@/brands.config";
 import { getNearestOutputRatio } from "@/hooks/useCrop";
 import { normalizeImageFile, parseExif } from "@/hooks/useExif";
 import { useWatermark } from "@/hooks/useWatermark";
@@ -43,9 +44,11 @@ function getPastedImageFile(event: ClipboardEvent) {
 }
 
 export function WatermarkApp() {
+  const t = useTranslations("preview");
   const { settings, updateSettings, applyExif, clearExif } = useWatermark();
   const [imageSource, setImageSource] = useState<ImageSource | null>(null);
   const [rendering, setRendering] = useState(false);
+  const [brandNotice, setBrandNotice] = useState<string | null>(null);
 
   useEffect(() => {
     return scheduleIdleTask(() => {
@@ -62,13 +65,15 @@ export function WatermarkApp() {
       const normalized = await normalizeImageFile(inputFile);
       const url = URL.createObjectURL(normalized);
       const [{ width, height }, exif] = await Promise.all([getImageSize(url), exifPromise]);
-      const brand = getBrand(settings.brandId);
+      const detectedBrand = detectBrandFromCamera(exif.make, exif.model);
+      const brand = detectedBrand ?? getBrand("ricoh-gr");
       const preset = getFramePreset(settings.frameStyle);
       const outputRatio = preset.lockRatio && preset.canvasRatio
         ? preset.canvasRatio
         : getNearestOutputRatio(width, height);
 
-      updateSettings({ outputRatio });
+      setBrandNotice(detectedBrand ? null : t("brandFallbackHint"));
+      updateSettings({ outputRatio, brandId: brand.id });
       applyExif({
         ...exif,
         model: exif.model || brand.defaultModel,
@@ -91,7 +96,7 @@ export function WatermarkApp() {
     } finally {
       setRendering(false);
     }
-  }, [applyExif, settings.brandId, settings.frameStyle, updateSettings]);
+  }, [applyExif, settings.frameStyle, t, updateSettings]);
 
   useEffect(() => {
     function handlePaste(event: ClipboardEvent) {
@@ -108,6 +113,7 @@ export function WatermarkApp() {
 
   function clearImage() {
     clearExif();
+    setBrandNotice(null);
     setImageSource((current) => {
       if (current) {
         URL.revokeObjectURL(current.url);
@@ -125,6 +131,7 @@ export function WatermarkApp() {
           <WatermarkPreview
             imageSource={imageSource}
             rendering={rendering}
+            brandNotice={brandNotice}
             settings={settings}
             updateSettings={updateSettings}
             onFile={handleFile}

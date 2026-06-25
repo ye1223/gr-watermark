@@ -36,7 +36,7 @@ export function AdvancedSettings({
               } ${
                 tone === "black"
                   ? "bg-[#11100e] text-[#f4efe7] hover:bg-[#181612] hover:text-[#f4efe7] dark:bg-[#11100e] dark:text-[#f4efe7] dark:hover:bg-[#181612] dark:hover:text-[#f4efe7]"
-                  : "bg-[#f7f3ec] text-[#15130f] hover:bg-[#eee8dd] hover:text-[#15130f] dark:bg-[#f7f3ec] dark:text-[#15130f] dark:hover:bg-[#eee8dd] dark:hover:text-[#15130f]"
+                  : "bg-[#faf9f6] text-[#151515] hover:bg-[#f0eee8] hover:text-[#151515] dark:bg-[#faf9f6] dark:text-[#151515] dark:hover:bg-[#f0eee8] dark:hover:text-[#151515]"
               }`}
               type="button"
               variant="outline"

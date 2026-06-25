@@ -11,7 +11,8 @@
   },
   "preview": {
     "title": "Canvas preview",
-    "cropHint": "Drag image to adjust composition"
+    "cropHint": "Drag image to adjust composition",
+    "brandFallbackHint": "Could not identify an Apple or Ricoh camera, so RICOH is used by default."
   },
   "config": {
     "title": "Watermark settings",

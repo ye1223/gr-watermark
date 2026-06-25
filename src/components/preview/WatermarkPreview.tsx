@@ -55,12 +55,14 @@ export function WatermarkPreview({
   settings,
   updateSettings,
   rendering,
+  brandNotice,
   onFile,
 }: {
   imageSource: ImageSource | null;
   settings: WatermarkSettings;
   updateSettings: (patch: Partial<WatermarkSettings>) => void;
   rendering: boolean;
+  brandNotice?: string | null;
   onFile: (file: File) => void;
 }) {
   const t = useTranslations("preview");
@@ -201,6 +203,11 @@ export function WatermarkPreview({
         </div>
       </div>
       <div className="relative flex min-h-0 flex-1 items-center justify-center p-4 md:p-6">
+        {brandNotice ? (
+          <div className="pointer-events-none absolute right-4 top-4 z-20 max-w-[min(22rem,calc(100%-2rem))] rounded-lg border bg-card/95 px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
+            {brandNotice}
+          </div>
+        ) : null}
         {!imageSource ? (
           <UploadZone compact onFile={onFile} onPrepare={preloadCanvasRenderer} />
         ) : (

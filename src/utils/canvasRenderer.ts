@@ -6,7 +6,7 @@ import type { BorderTone, ImageSource, OutputRatio, WatermarkSettings } from "@/
 function toneColors(tone: BorderTone) {
   return tone === "black"
     ? { bg: "#11100e", fg: "#f4efe7", muted: "rgba(244,239,231,0.64)", line: "rgba(244,239,231,0.24)" }
-    : { bg: "#f7f3ec", fg: "#15130f", muted: "rgba(21,19,15,0.58)", line: "rgba(21,19,15,0.18)" };
+    : { bg: "#faf9f6", fg: "#151515", muted: "rgba(21,21,21,0.58)", line: "rgba(21,21,21,0.18)" };
 }
 
 function fitFont(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, size: number, weight = 600) {
@@ -159,6 +159,46 @@ function applyCardMode({
   ctx.strokeRect(x, y, contentWidth, contentHeight);
 }
 
+function drawBrandLogo({
+  ctx,
+  logo,
+  brand,
+  color,
+  x,
+  y,
+  width,
+  height,
+}: {
+  ctx: CanvasRenderingContext2D;
+  logo: HTMLImageElement;
+  brand: BrandConfig;
+  color: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}) {
+  if (brand.logoTone !== "foreground") {
+    ctx.drawImage(logo, x, y, width, height);
+    return;
+  }
+
+  const mask = document.createElement("canvas");
+  mask.width = Math.max(1, Math.ceil(width));
+  mask.height = Math.max(1, Math.ceil(height));
+  const maskCtx = mask.getContext("2d");
+  if (!maskCtx) {
+    ctx.drawImage(logo, x, y, width, height);
+    return;
+  }
+
+  maskCtx.drawImage(logo, 0, 0, mask.width, mask.height);
+  maskCtx.globalCompositeOperation = "source-in";
+  maskCtx.fillStyle = color;
+  maskCtx.fillRect(0, 0, mask.width, mask.height);
+  ctx.drawImage(mask, x, y, width, height);
+}
+
 export async function loadImageElement(src: string) {
   const image = new Image();
   image.crossOrigin = "anonymous";
@@ -237,7 +277,7 @@ export function drawWatermarkCanvas({
   const padX = Math.max(24, outputWidth * (isFilmWatermark ? 0.08 : 0.05));
   const gap = Math.max(12, outputWidth * 0.018);
   const logoMaxWidth = outputWidth * (isFilmWatermark ? 0.16 : 0.18);
-  const logoMaxHeight = Math.max(16, barHeight * (isFilmWatermark ? 0.32 : 0.3));
+  const logoMaxHeight = Math.max(16, barHeight * (isFilmWatermark ? 0.32 : 0.3)) * (brand.logoHeightScale ?? 1);
   const logoNaturalRatio =
     logo && logo.naturalWidth > 0 && logo.naturalHeight > 0
       ? logo.naturalWidth / logo.naturalHeight
@@ -287,7 +327,16 @@ export function drawWatermarkCanvas({
   if (subtitle) ctx.fillText(subtitle, padX, barY + barHeight * (title ? 0.61 : 0.5), leftWidth);
 
   if (logo) {
-    ctx.drawImage(logo, logoLeft, barY + (barHeight - logoDrawHeight) / 2, logoDrawWidth, logoDrawHeight);
+    drawBrandLogo({
+      ctx,
+      logo,
+      brand,
+      color: colors.fg,
+      x: logoLeft,
+      y: barY + (barHeight - logoDrawHeight) / 2,
+      width: logoDrawWidth,
+      height: logoDrawHeight,
+    });
   } else {
     ctx.fillStyle = brand.accentColor;
     ctx.font = `760 ${Math.max(12, logoDrawHeight)}px Inter, Arial, sans-serif`;

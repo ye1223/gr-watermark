@@ -34,6 +34,7 @@ export async function parseExif(file: File): Promise<ParsedExif> {
     const exifr = await preloadExifParser();
     const data = await exifr.parse(file, {
       pick: [
+        "Make",
         "Model",
         "FocalLength",
         "FNumber",
@@ -45,6 +46,7 @@ export async function parseExif(file: File): Promise<ParsedExif> {
     });
 
     return {
+      make: data?.Make,
       model: data?.Model,
       focalLength: formatNumber(data?.FocalLength, 0)
         ? `${formatNumber(data?.FocalLength, 0)}mm`

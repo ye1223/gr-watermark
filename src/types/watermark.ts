@@ -50,6 +50,7 @@ export interface ImageSource {
 }
 
 export interface ParsedExif {
+  make?: string;
   model?: string;
   focalLength?: string;
   aperture?: string;

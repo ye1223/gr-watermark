@@ -11,7 +11,8 @@
   },
   "preview": {
     "title": "画布预览",
-    "cropHint": "拖动图片调整构图"
+    "cropHint": "拖动图片调整构图",
+    "brandFallbackHint": "未识别到 Apple 或 Ricoh 机型，已默认使用 RICOH。"
   },
   "config": {
     "title": "水印设置",
