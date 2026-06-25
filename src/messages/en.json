@@ -18,6 +18,8 @@
     "frameStyle": "Frame style",
     "outputRatio": "Output size",
     "watermarkOverlay": "Watermark overlay",
+    "cardMode": "Card mode",
+    "cardModeHint": "Exports as PNG and keeps a transparent background.",
     "outputTab": "Output",
     "metadataTab": "Watermark info",
     "outputDescription": "Choose frame, border, and export ratio",

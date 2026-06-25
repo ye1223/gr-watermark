@@ -5,10 +5,12 @@ import { FieldRow } from "./FieldRow";
 
 export function WatermarkToggle({
   label,
+  help,
   checked,
   onChange,
 }: {
   label: string;
+  help?: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
 }) {
@@ -35,6 +37,7 @@ export function WatermarkToggle({
           />
         </button>
       }
+      help={help}
       label={label}
     >
       <div className="h-px" />

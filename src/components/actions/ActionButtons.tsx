@@ -35,6 +35,8 @@ export function ActionButtons({
       settings,
       brand: getBrand(settings.brandId),
     });
+    if (settings.cardMode) return rendered;
+
     return writeExifToJpeg(rendered, imageSource.file);
   }
 
@@ -46,7 +48,9 @@ export function ActionButtons({
       const href = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = href;
-      link.download = `${imageSource?.name.replace(/\.[^.]+$/, "") || "gr-watermark"}-watermark.jpg`;
+      link.download = `${imageSource?.name.replace(/\.[^.]+$/, "") || "gr-watermark"}-watermark.${
+        settings.cardMode ? "png" : "jpg"
+      }`;
       link.click();
       URL.revokeObjectURL(href);
     } finally {
@@ -59,8 +63,8 @@ export function ActionButtons({
     try {
       const blob = await createOutputBlob();
       if (!blob || !imageSource) return;
-      const file = new File([blob], `${imageSource.name.replace(/\.[^.]+$/, "")}-watermark.jpg`, {
-        type: "image/jpeg",
+      const file = new File([blob], `${imageSource.name.replace(/\.[^.]+$/, "")}-watermark.${settings.cardMode ? "png" : "jpg"}`, {
+        type: settings.cardMode ? "image/png" : "image/jpeg",
       });
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: "GR印迹" });

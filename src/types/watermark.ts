@@ -24,6 +24,7 @@ export interface WatermarkSettings {
   frameStyle: FrameStyle;
   outputRatio: OutputRatio;
   watermark: boolean;
+  cardMode: boolean;
   brandId: string;
   borderTone: BorderTone;
   showModel: boolean;

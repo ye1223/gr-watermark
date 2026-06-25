@@ -28,6 +28,66 @@ function fitFont(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, 
   return next;
 }
 
+function applyCardMode({
+  canvas,
+  contentCanvas,
+  settings,
+}: {
+  canvas: HTMLCanvasElement;
+  contentCanvas: HTMLCanvasElement;
+  settings: WatermarkSettings;
+}) {
+  if (!settings.cardMode) return;
+
+  const contentWidth = contentCanvas.width;
+  const contentHeight = contentCanvas.height;
+  const cardBase = Math.min(contentWidth, contentHeight);
+  const shadowBlur = Math.round(Math.max(26, cardBase * 0.045));
+  const shadowOffsetY = Math.round(Math.max(8, cardBase * 0.018));
+  const visualMargin = Math.round(Math.max(34, cardBase * 0.058));
+  const padX = visualMargin + shadowBlur;
+  const padTop = visualMargin + shadowBlur;
+  const padBottom = visualMargin + shadowBlur + shadowOffsetY;
+  const x = padX;
+  const y = padTop;
+  const outerWidth = contentWidth + padX * 2;
+  const outerHeight = contentHeight + padTop + padBottom;
+  const shadowStrong =
+    settings.borderTone === "black" ? "rgba(0,0,0,0.58)" : "rgba(15,23,42,0.24)";
+  const shadowSoft =
+    settings.borderTone === "black" ? "rgba(0,0,0,0.36)" : "rgba(15,23,42,0.12)";
+  const stroke = settings.borderTone === "black" ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.12)";
+
+  canvas.width = outerWidth;
+  canvas.height = outerHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, outerWidth, outerHeight);
+
+  ctx.save();
+  ctx.shadowColor = shadowSoft;
+  ctx.shadowBlur = shadowBlur * 1.6;
+  ctx.shadowOffsetY = shadowOffsetY * 1.5;
+  ctx.fillStyle = settings.borderTone === "black" ? "#080808" : "#ffffff";
+  ctx.fillRect(x, y, contentWidth, contentHeight);
+  ctx.restore();
+
+  ctx.save();
+  ctx.shadowColor = shadowStrong;
+  ctx.shadowBlur = shadowBlur;
+  ctx.shadowOffsetY = shadowOffsetY;
+  ctx.fillStyle = settings.borderTone === "black" ? "#080808" : "#ffffff";
+  ctx.fillRect(x, y, contentWidth, contentHeight);
+  ctx.restore();
+
+  ctx.drawImage(contentCanvas, x, y);
+
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = Math.max(1, cardBase * 0.001);
+  ctx.strokeRect(x, y, contentWidth, contentHeight);
+}
+
 export async function loadImageElement(src: string) {
   const image = new Image();
   image.crossOrigin = "anonymous";
@@ -61,12 +121,14 @@ export function drawWatermarkCanvas({
   const bottomBorder = hasWatermark ? Math.round(frameBase * style.bottom) : 0;
   const outputWidth = baseWidth + sideBorder * 2;
   const outputHeight = baseHeight + topBorder + bottomBorder;
-  const ctx = canvas.getContext("2d");
+  const contentCanvas = settings.cardMode ? document.createElement("canvas") : canvas;
+
+  contentCanvas.width = outputWidth;
+  contentCanvas.height = outputHeight;
+  const ctx = contentCanvas.getContext("2d");
 
   if (!ctx) return;
 
-  canvas.width = outputWidth;
-  canvas.height = outputHeight;
   const colors = toneColors(settings.borderTone);
 
   ctx.fillStyle = colors.bg;
@@ -85,17 +147,21 @@ export function drawWatermarkCanvas({
     baseHeight
   );
 
-  if (!hasWatermark || bottomBorder <= 0) return;
+  if (!hasWatermark || bottomBorder <= 0) {
+    applyCardMode({ canvas, contentCanvas, settings });
+    return;
+  }
 
   const barY = topBorder + baseHeight;
   const padX = Math.max(24, outputWidth * 0.05);
   const gap = Math.max(12, outputWidth * 0.018);
   const logoMaxWidth = outputWidth * 0.18;
   const logoMaxHeight = Math.max(18, bottomBorder * 0.3);
-  const logoRatio =
+  const logoNaturalRatio =
     logo && logo.naturalWidth > 0 && logo.naturalHeight > 0
       ? logo.naturalWidth / logo.naturalHeight
-      : 4.8;
+      : undefined;
+  const logoRatio = brand.logoAspectRatio ?? logoNaturalRatio ?? 4.8;
   const logoSize =
     logoMaxHeight * logoRatio > logoMaxWidth
       ? { width: logoMaxWidth, height: logoMaxWidth / logoRatio }
@@ -176,6 +242,8 @@ export function drawWatermarkCanvas({
       ctx.fillText(date, rightTextX, barY + bottomBorder * (params.length ? 0.61 : 0.5), rightWidth);
     }
   }
+
+  applyCardMode({ canvas, contentCanvas, settings });
 }
 
 export async function renderWatermarkBlob({
@@ -200,8 +268,8 @@ export async function renderWatermarkBlob({
         if (blob) resolve(blob);
         else reject(new Error("Unable to render JPEG"));
       },
-      "image/jpeg",
-      0.95
+      settings.cardMode ? "image/png" : "image/jpeg",
+      settings.cardMode ? undefined : 0.95
     );
   });
 }

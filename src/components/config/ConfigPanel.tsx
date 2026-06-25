@@ -104,6 +104,12 @@ export function ConfigPanel({
                 label={t("watermarkOverlay")}
                 onChange={(watermark) => updateSettings({ watermark })}
               />
+              <WatermarkToggle
+                checked={settings.cardMode}
+                help={t("cardModeHint")}
+                label={t("cardMode")}
+                onChange={(cardMode) => updateSettings({ cardMode })}
+              />
             </CardContent>
           </Card>
           ) : (

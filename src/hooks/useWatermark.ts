@@ -16,6 +16,7 @@ export const defaultSettings: WatermarkSettings = {
   frameStyle: "CLASSIC",
   outputRatio: "3:2",
   watermark: true,
+  cardMode: false,
   brandId: "ricoh-gr",
   borderTone: "white",
   showModel: true,
