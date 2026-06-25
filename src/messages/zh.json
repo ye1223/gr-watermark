@@ -17,6 +17,7 @@
   "config": {
     "title": "水印设置",
     "subtitle": "调整画幅、边框与照片信息",
+    "reset": "重置",
     "frameStyle": "边框样式",
     "outputRatio": "输出规格",
     "watermarkOverlay": "水印叠加",

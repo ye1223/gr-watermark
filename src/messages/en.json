@@ -17,6 +17,7 @@
   "config": {
     "title": "Watermark settings",
     "subtitle": "Tune frame, output, and photo metadata",
+    "reset": "Reset",
     "frameStyle": "Frame style",
     "outputRatio": "Output size",
     "watermarkOverlay": "Watermark overlay",

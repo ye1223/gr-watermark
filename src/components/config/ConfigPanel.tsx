@@ -2,7 +2,9 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -33,9 +35,11 @@ const AdvancedSettings = dynamic(
 export function ConfigPanel({
   settings,
   updateSettings,
+  onReset,
 }: {
   settings: WatermarkSettings;
   updateSettings: (patch: Partial<WatermarkSettings>) => void;
+  onReset: () => void;
 }) {
   const t = useTranslations("config");
   const [activeTab, setActiveTab] = useState<"output" | "metadata">("output");
@@ -50,12 +54,24 @@ export function ConfigPanel({
 
   return (
     <aside className="min-h-0 rounded-xl border bg-card shadow-sm md:h-[calc(100vh-5.5rem)] md:overflow-y-auto">
-      <div className="border-b p-4">
-        <h2 className="flex items-center gap-2 text-sm font-medium">
-          <span className="size-2 rounded-full bg-primary" />
-          {t("title")}
-        </h2>
-        <p className="mt-1 text-xs text-muted-foreground">{t("subtitle")}</p>
+      <div className="flex items-start justify-between gap-3 border-b p-4">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-sm font-medium">
+            <span className="size-2 rounded-full bg-primary" />
+            {t("title")}
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">{t("subtitle")}</p>
+        </div>
+        <Button
+          className="shrink-0 text-muted-foreground hover:text-foreground"
+          size="sm"
+          type="button"
+          variant="ghost"
+          onClick={onReset}
+        >
+          <RotateCcw className="size-3.5" />
+          {t("reset")}
+        </Button>
       </div>
       <div className="p-4">
         <div className="grid h-8 w-full grid-cols-2 rounded-lg bg-muted p-[3px]" role="tablist">

@@ -266,6 +266,7 @@ export function useWatermark() {
           ...current,
           ...emptyExifSettings,
         })),
+      resetSettings: () => setSettings(defaultSettings),
     }),
     [settings]
   );

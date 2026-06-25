@@ -1,6 +1,6 @@
 "use client";
 
-import { type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type PointerEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ImageIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getBrand } from "@/brands.config";
@@ -66,10 +66,15 @@ export function WatermarkPreview({
   onFile: (file: File) => void;
 }) {
   const t = useTranslations("preview");
+  const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<Awaited<ReturnType<typeof preloadCanvasRenderer>> | null>(null);
   const imageCacheRef = useRef<{ url: string; image: HTMLImageElement } | null>(null);
   const logoCacheRef = useRef<{ url: string; image: HTMLImageElement | null } | null>(null);
+  const settingsRef = useRef(settings);
+  const pendingCropOffsetRef = useRef<WatermarkSettings["cropOffset"]>(settings.cropOffset);
+  const animationFrameRef = useRef<number | null>(null);
+  const renderTokenRef = useRef(0);
   const dragRef = useRef<{
     pointerId: number;
     startX: number;
@@ -83,44 +88,89 @@ export function WatermarkPreview({
   const cropActive = Boolean(imageSource && effectiveRatio !== "ORIGINAL");
 
   useEffect(() => {
-    let cancelled = false;
-    async function render() {
+    settingsRef.current = settings;
+    if (!dragRef.current) pendingCropOffsetRef.current = settings.cropOffset;
+  }, [settings]);
+
+  useEffect(
+    () => () => {
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+      }
+    },
+    []
+  );
+
+  const getPreviewMaxCanvasSide = useCallback((fast: boolean) => {
+    const rect = stageRef.current?.getBoundingClientRect();
+    const visibleSide = Math.max(rect?.width ?? 0, rect?.height ?? 0);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const targetSide = visibleSide > 0 ? visibleSide * dpr : fast ? 1100 : 1500;
+    const minSide = fast ? 760 : 1100;
+    const maxSide = fast ? 1280 : 1900;
+
+    return Math.round(Math.min(maxSide, Math.max(minSide, targetSide)));
+  }, []);
+
+  const renderPreview = useCallback(
+    async (
+      settingsToRender: WatermarkSettings,
+      options: { fast?: boolean; showBusy?: boolean } = {}
+    ) => {
       if (!imageSource || !canvasRef.current) return;
-      setLocalRendering(true);
-      const brand = getBrand(settings.brandId);
+
+      const fast = options.fast ?? false;
+      const showBusy = options.showBusy ?? !fast;
+      const token = ++renderTokenRef.current;
+
+      if (showBusy) setLocalRendering(true);
+
       try {
+        const brand = getBrand(settingsToRender.brandId);
         const renderer = rendererRef.current ?? await preloadCanvasRenderer();
         rendererRef.current = renderer;
+        if (token !== renderTokenRef.current || !canvasRef.current) return;
+
         const image =
           imageCacheRef.current?.url === imageSource.url
             ? imageCacheRef.current.image
             : await renderer.loadImageElement(imageSource.url);
-        if (cancelled || !canvasRef.current) return;
+        if (token !== renderTokenRef.current || !canvasRef.current) return;
         imageCacheRef.current = { url: imageSource.url, image };
+
         const logo =
           logoCacheRef.current?.url === brand.logo
             ? logoCacheRef.current.image
             : await renderer.loadImageElement(brand.logo).catch(() => null);
-        if (cancelled || !canvasRef.current) return;
+        if (token !== renderTokenRef.current || !canvasRef.current) return;
         logoCacheRef.current = { url: brand.logo, image: logo };
+
         renderer.drawWatermarkCanvas({
           canvas: canvasRef.current,
           image,
-          settings,
+          settings: settingsToRender,
           brand,
           logo,
+          maxCanvasSide: getPreviewMaxCanvasSide(fast),
+          imageSmoothingQuality: fast ? "medium" : "high",
         });
       } finally {
-        if (!cancelled) setLocalRendering(false);
+        if (showBusy && token === renderTokenRef.current) setLocalRendering(false);
       }
-    }
+    },
+    [getPreviewMaxCanvasSide, imageSource]
+  );
 
-    const timer = setTimeout(render, cropActive ? 16 : 100);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (dragRef.current) return;
+      void renderPreview(settings);
+    }, cropActive ? 0 : 80);
+
     return () => {
-      cancelled = true;
       clearTimeout(timer);
     };
-  }, [cropActive, imageSource, settings]);
+  }, [cropActive, imageSource, renderPreview, settings]);
 
   useEffect(() => {
     if (!cropActive || !imageSource) return;
@@ -138,13 +188,16 @@ export function WatermarkPreview({
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     if (!cropActive || !imageSource) return;
 
+    renderTokenRef.current += 1;
+    setLocalRendering(false);
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      startOffset: settings.cropOffset,
+      startOffset: settingsRef.current.cropOffset,
     };
+    pendingCropOffsetRef.current = settingsRef.current.cropOffset;
     setDragging(true);
   }
 
@@ -152,7 +205,8 @@ export function WatermarkPreview({
     if (!dragRef.current || !canvasRef.current || !imageSource) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
-    const geometry = getPreviewCropGeometry(settings, imageSource.width, imageSource.height);
+    const currentSettings = settingsRef.current;
+    const geometry = getPreviewCropGeometry(currentSettings, imageSource.width, imageSource.height);
     const overflowX = imageSource.width - geometry.crop.sw;
     const overflowY = imageSource.height - geometry.crop.sh;
     const drawWidthCss = rect.width * geometry.widthFraction;
@@ -171,12 +225,30 @@ export function WatermarkPreview({
       next.y = clamp(dragRef.current.startOffset.y - sourceDy / overflowY);
     }
 
-    updateSettings({ cropOffset: next });
+    pendingCropOffsetRef.current = next;
+
+    if (animationFrameRef.current !== null) return;
+    animationFrameRef.current = window.requestAnimationFrame(() => {
+      animationFrameRef.current = null;
+      void renderPreview(
+        {
+          ...settingsRef.current,
+          cropOffset: pendingCropOffsetRef.current,
+        },
+        { fast: true, showBusy: false }
+      );
+    });
   }
 
   function handlePointerEnd(event: PointerEvent<HTMLDivElement>) {
     if (dragRef.current?.pointerId === event.pointerId) {
+      const next = pendingCropOffsetRef.current;
       dragRef.current = null;
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      updateSettings({ cropOffset: next });
       setDragging(false);
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
@@ -212,6 +284,7 @@ export function WatermarkPreview({
           <UploadZone compact onFile={onFile} onPrepare={preloadCanvasRenderer} />
         ) : (
           <div
+            ref={stageRef}
             className={cn(
               "relative mx-auto flex max-h-[calc(100vh-12rem)] w-full touch-none items-center justify-center",
               cropActive && (dragging ? "cursor-grabbing" : "cursor-grab")

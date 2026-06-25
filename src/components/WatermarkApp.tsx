@@ -45,7 +45,7 @@ function getPastedImageFile(event: ClipboardEvent) {
 
 export function WatermarkApp() {
   const t = useTranslations("preview");
-  const { settings, updateSettings, applyExif, clearExif } = useWatermark();
+  const { settings, updateSettings, applyExif, clearExif, resetSettings } = useWatermark();
   const [imageSource, setImageSource] = useState<ImageSource | null>(null);
   const [rendering, setRendering] = useState(false);
   const [brandNotice, setBrandNotice] = useState<string | null>(null);
@@ -138,7 +138,7 @@ export function WatermarkApp() {
           />
           <ActionButtons imageSource={imageSource} settings={settings} onClear={clearImage} />
         </div>
-        <ConfigPanel settings={settings} updateSettings={updateSettings} />
+        <ConfigPanel settings={settings} updateSettings={updateSettings} onReset={resetSettings} />
       </main>
     </div>
   );

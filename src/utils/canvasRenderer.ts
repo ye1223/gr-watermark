@@ -28,6 +28,10 @@ function getEffectiveRatio(settings: WatermarkSettings): OutputRatio {
   return preset.lockRatio && preset.canvasRatio ? preset.canvasRatio : settings.outputRatio;
 }
 
+function getRightMetaLineY(primary: boolean, barY: number, barHeight: number) {
+  return barY + barHeight * (primary ? 0.385 : 0.615);
+}
+
 function getBorderRatios(settings: WatermarkSettings) {
   const preset = getFramePreset(settings.frameStyle);
   if (!settings.watermark) {
@@ -451,12 +455,16 @@ export function drawWatermarkCanvas({
   settings,
   brand,
   logo,
+  maxCanvasSide,
+  imageSmoothingQuality = "high",
 }: {
   canvas: HTMLCanvasElement;
   image: HTMLImageElement;
   settings: WatermarkSettings;
   brand: BrandConfig;
   logo?: HTMLImageElement | null;
+  maxCanvasSide?: number;
+  imageSmoothingQuality?: ImageSmoothingQuality;
 }) {
   const preset = getFramePreset(settings.frameStyle);
   const layout = getLayout({
@@ -472,22 +480,26 @@ export function drawWatermarkCanvas({
   const bottomBorder = layout.outputHeight - layout.imageY - layout.imageHeight;
   const outputWidth = layout.outputWidth;
   const outputHeight = layout.outputHeight;
+  const renderScale = maxCanvasSide
+    ? Math.min(1, maxCanvasSide / Math.max(outputWidth, outputHeight))
+    : 1;
   const isFilmWatermark = preset.group === "film" && settings.filmWatermark;
   const hasWatermark = settings.watermark && settings.watermarkMode === "metadata" && (preset.showWatermarkBar || isFilmWatermark);
   const contentCanvas = settings.cardMode ? document.createElement("canvas") : canvas;
 
-  contentCanvas.width = outputWidth;
-  contentCanvas.height = outputHeight;
+  contentCanvas.width = Math.max(1, Math.round(outputWidth * renderScale));
+  contentCanvas.height = Math.max(1, Math.round(outputHeight * renderScale));
   const ctx = contentCanvas.getContext("2d");
 
   if (!ctx) return;
 
+  ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
   const colors = toneColors(settings.borderTone);
 
   ctx.fillStyle = colors.bg;
   ctx.fillRect(0, 0, outputWidth, outputHeight);
   ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
+  ctx.imageSmoothingQuality = imageSmoothingQuality;
   ctx.drawImage(
     image,
     crop.sx,
@@ -524,15 +536,15 @@ export function drawWatermarkCanvas({
   }
 
   const barHeight = isFilmWatermark
-    ? Math.max(34, Math.min(bottomBorder * 0.42, outputWidth * 0.075))
+    ? Math.max(38, Math.min(bottomBorder * 0.5, outputWidth * 0.088))
     : bottomBorder;
   const barY = isFilmWatermark
-    ? topBorder + baseHeight + bottomBorder * 0.54 - barHeight / 2
+    ? topBorder + baseHeight + bottomBorder * 0.56 - barHeight / 2
     : topBorder + baseHeight;
-  const padX = Math.max(24, outputWidth * (isFilmWatermark ? 0.08 : 0.05));
-  const gap = Math.max(12, outputWidth * 0.018);
-  const logoMaxWidth = outputWidth * (isFilmWatermark ? 0.16 : 0.18);
-  const logoMaxHeight = Math.max(16, barHeight * (isFilmWatermark ? 0.32 : 0.3)) * (brand.logoHeightScale ?? 1);
+  const padX = Math.max(24, outputWidth * (isFilmWatermark ? 0.09 : 0.05));
+  const gap = Math.max(12, outputWidth * (isFilmWatermark ? 0.02 : 0.018));
+  const logoMaxWidth = outputWidth * (isFilmWatermark ? 0.145 : 0.18);
+  const logoMaxHeight = Math.max(16, barHeight * (isFilmWatermark ? 0.34 : 0.3)) * (brand.logoHeightScale ?? 1);
   const logoSize = getLogoSize({ brand, logo, maxWidth: logoMaxWidth, maxHeight: logoMaxHeight });
   const logoDrawWidth = logoSize.width;
   const logoDrawHeight = logoSize.height;
@@ -550,15 +562,24 @@ export function drawWatermarkCanvas({
   const title = settings.showModel ? settings.model || brand.defaultModel : "";
   const date = settings.showDate ? settings.date : "";
   const subtitle = settings.showSubtitle ? settings.subtitle : "";
-  const titleSize = fitFont(ctx, title || " ", leftWidth, Math.max(13, barHeight * 0.22), 650);
-  const smallSize = Math.max(9, barHeight * 0.13);
+  const params = settings.showExif
+    ? [
+        settings.focalLength,
+        settings.aperture,
+        settings.shutter,
+        settings.iso ? `ISO${settings.iso}` : "",
+      ].filter(Boolean)
+    : [];
+  const titleSize = fitFont(ctx, title || " ", leftWidth, Math.max(13, barHeight * (isFilmWatermark ? 0.235 : 0.22)), 650);
+  const smallSize = Math.max(9, barHeight * (isFilmWatermark ? 0.145 : 0.13));
+  const rightSecondarySize = Math.max(10, barHeight * (isFilmWatermark ? 0.15 : 0.14));
+  const rightPrimaryY = getRightMetaLineY(true, barY, barHeight);
+  const rightSecondaryY = getRightMetaLineY(false, barY, barHeight);
   const rightSize = fitFont(
     ctx,
-    [settings.focalLength, settings.aperture, settings.shutter, settings.iso ? `ISO${settings.iso}` : ""]
-      .filter(Boolean)
-      .join(" "),
+    params.join(" "),
     rightWidth,
-    Math.max(13, barHeight * 0.22),
+    Math.max(13, barHeight * (isFilmWatermark ? 0.235 : 0.22)),
     650
   );
 
@@ -598,25 +619,17 @@ export function drawWatermarkCanvas({
   ctx.lineTo(separatorX, barY + barHeight * 0.77);
   ctx.stroke();
 
-  const params = settings.showExif
-    ? [
-        settings.focalLength,
-        settings.aperture,
-        settings.shutter,
-        settings.iso ? `ISO${settings.iso}` : "",
-      ].filter(Boolean)
-    : [];
   if (params.length || date) {
     ctx.fillStyle = colors.fg;
     ctx.font = `650 ${rightSize}px Inter, Arial, sans-serif`;
     ctx.textAlign = "right";
     if (params.length) {
-      ctx.fillText(params.join(" "), rightTextX, barY + barHeight * (date ? 0.39 : 0.5), rightWidth);
+      ctx.fillText(params.join(" "), rightTextX, date ? rightPrimaryY : barY + barHeight * 0.5, rightWidth);
     }
     if (date) {
       ctx.fillStyle = colors.muted;
-      ctx.font = `400 ${smallSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(date, rightTextX, barY + barHeight * (params.length ? 0.61 : 0.5), rightWidth);
+      ctx.font = `400 ${rightSecondarySize}px Inter, Arial, sans-serif`;
+      ctx.fillText(date, rightTextX, params.length ? rightSecondaryY : barY + barHeight * 0.5, rightWidth);
     }
   }
 
