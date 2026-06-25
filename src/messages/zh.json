@@ -20,6 +20,15 @@
     "frameStyle": "边框样式",
     "outputRatio": "输出规格",
     "watermarkOverlay": "水印叠加",
+    "watermarkMode": "水印形式",
+    "logoCornerPosition": "照片四角",
+    "logoBorderPosition": "边框居中",
+    "logoPosition": "Logo 位置",
+    "logoPositionPhotoHint": "照片内四角",
+    "logoPositionBorderHint": "边框四边",
+    "logoSize": "Logo 大小",
+    "logoInset": "边距",
+    "logoColorMode": "Logo 色彩",
     "cardMode": "卡片模式",
     "cardModeHint": "开启后导出 PNG，并保留透明背景。",
     "borderHeight": "边框高度",
@@ -49,7 +58,25 @@
     "subtitlePlaceholder": "photo by ...",
     "borderTone": "边框颜色",
     "white": "白底",
-    "black": "黑底"
+    "black": "黑底",
+    "watermarkModes": {
+      "metadata": "参数信息",
+      "logo": "仅 Logo"
+    },
+    "logoPlacements": {
+      "photo-top-left": "左上",
+      "photo-top-right": "右上",
+      "photo-bottom-left": "左下",
+      "photo-bottom-right": "右下",
+      "border-top": "上边",
+      "border-right": "右边",
+      "border-bottom": "下边",
+      "border-left": "左边"
+    },
+    "logoColorModes": {
+      "brand": "品牌色",
+      "solid": "纯色"
+    }
   },
   "actions": {
     "clear": "清除",
@@ -57,6 +84,7 @@
     "share": "分享"
   },
   "presets": {
+    "CLEAN": "CLEAN",
     "CLASSIC": "CLASSIC",
     "MINIMAL": "MINIMAL",
     "FRAME": "FRAME",

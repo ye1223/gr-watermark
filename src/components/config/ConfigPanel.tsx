@@ -16,6 +16,7 @@ import type { WatermarkSettings } from "@/types/watermark";
 import { scheduleIdleTask } from "@/utils/preload";
 import { BorderControls } from "./BorderHeightSlider";
 import { FrameStyleSelect } from "./FrameStyleSelect";
+import { LogoWatermarkControls } from "./LogoWatermarkControls";
 import { RatioSelect } from "./RatioSelect";
 import { WatermarkToggle } from "./WatermarkToggle";
 
@@ -119,7 +120,22 @@ export function ConfigPanel({
                 label={t("watermarkOverlay")}
                 onChange={(watermark) => updateSettings({ watermark })}
               />
-              {selectedPreset.group === "film" ? (
+              {settings.watermark ? (
+                <LogoWatermarkControls
+                  colorMode={settings.logoColorMode}
+                  inset={settings.logoInset}
+                  mode={settings.watermarkMode}
+                  placement={settings.logoPlacement}
+                  scale={settings.logoScale}
+                  t={t}
+                  onColorModeChange={(logoColorMode) => updateSettings({ logoColorMode })}
+                  onInsetChange={(logoInset) => updateSettings({ logoInset })}
+                  onModeChange={(watermarkMode) => updateSettings({ watermarkMode })}
+                  onPlacementChange={(logoPlacement) => updateSettings({ logoPlacement })}
+                  onScaleChange={(logoScale) => updateSettings({ logoScale })}
+                />
+              ) : null}
+              {selectedPreset.group === "film" && settings.watermarkMode === "metadata" ? (
                 <WatermarkToggle
                   checked={settings.filmWatermark}
                   help={t("filmWatermarkHint")}

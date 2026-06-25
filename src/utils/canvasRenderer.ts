@@ -1,7 +1,7 @@
 import type { BrandConfig } from "@/brands.config";
 import { getCrop, ratioToNumber } from "@/hooks/useCrop";
 import { getFramePreset } from "@/presets.config";
-import type { BorderTone, ImageSource, OutputRatio, WatermarkSettings } from "@/types/watermark";
+import type { BorderTone, ImageSource, LogoPlacement, OutputRatio, WatermarkSettings } from "@/types/watermark";
 
 function toneColors(tone: BorderTone) {
   return tone === "black"
@@ -199,6 +199,243 @@ function drawBrandLogo({
   ctx.drawImage(mask, x, y, width, height);
 }
 
+function drawBrandLogoTransformed({
+  ctx,
+  logo,
+  brand,
+  color,
+  x,
+  y,
+  width,
+  height,
+  rotation = 0,
+}: {
+  ctx: CanvasRenderingContext2D;
+  logo: HTMLImageElement;
+  brand: BrandConfig;
+  color: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation?: number;
+}) {
+  if (!rotation) {
+    drawBrandLogo({ ctx, logo, brand, color, x, y, width, height });
+    return;
+  }
+
+  ctx.save();
+  ctx.translate(x + width / 2, y + height / 2);
+  ctx.rotate(rotation);
+  drawBrandLogo({
+    ctx,
+    logo,
+    brand,
+    color,
+    x: -width / 2,
+    y: -height / 2,
+    width,
+    height,
+  });
+  ctx.restore();
+}
+
+function getLogoSize({
+  brand,
+  logo,
+  maxWidth,
+  maxHeight,
+}: {
+  brand: BrandConfig;
+  logo?: HTMLImageElement | null;
+  maxWidth: number;
+  maxHeight: number;
+}) {
+  const logoNaturalRatio =
+    logo && logo.naturalWidth > 0 && logo.naturalHeight > 0
+      ? logo.naturalWidth / logo.naturalHeight
+      : undefined;
+  const logoRatio = brand.logoAspectRatio ?? logoNaturalRatio ?? 4.8;
+
+  return maxHeight * logoRatio > maxWidth
+    ? { width: maxWidth, height: maxWidth / logoRatio }
+    : { width: maxHeight * logoRatio, height: maxHeight };
+}
+
+function drawLogoFallbackText({
+  ctx,
+  brand,
+  color,
+  x,
+  y,
+  width,
+  height,
+  rotation = 0,
+}: {
+  ctx: CanvasRenderingContext2D;
+  brand: BrandConfig;
+  color: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation?: number;
+}) {
+  ctx.save();
+  ctx.translate(x + width / 2, y + height / 2);
+  ctx.rotate(rotation);
+  ctx.fillStyle = brand.logoTone === "foreground" ? color : brand.accentColor;
+  ctx.font = `760 ${Math.max(12, height * 0.72)}px Inter, Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(brand.name, 0, 0, width);
+  ctx.restore();
+}
+
+function isBorderPlacement(placement: LogoPlacement) {
+  return placement.startsWith("border-");
+}
+
+function drawLogoOnlyWatermark({
+  ctx,
+  logo,
+  brand,
+  settings,
+  colors,
+  outputWidth,
+  outputHeight,
+  imageX,
+  imageY,
+  imageWidth,
+  imageHeight,
+}: {
+  ctx: CanvasRenderingContext2D;
+  logo?: HTMLImageElement | null;
+  brand: BrandConfig;
+  settings: WatermarkSettings;
+  colors: ReturnType<typeof toneColors>;
+  outputWidth: number;
+  outputHeight: number;
+  imageX: number;
+  imageY: number;
+  imageWidth: number;
+  imageHeight: number;
+}) {
+  if (!settings.watermark || settings.watermarkMode !== "logo") return;
+
+  const placement = settings.logoPlacement;
+  const shortSide = Math.min(outputWidth, outputHeight);
+  const inset = Math.max(8, shortSide * settings.logoInset);
+  const color =
+    settings.logoColorMode === "solid" || brand.logoTone === "foreground"
+      ? colors.fg
+      : brand.accentColor;
+  const borderTop = imageY;
+  const borderLeft = imageX;
+  const borderRight = outputWidth - imageX - imageWidth;
+  const borderBottom = outputHeight - imageY - imageHeight;
+  const borderInsetRatio = clamp(settings.logoInset, 0.01, 0.08) / 0.08;
+  const baseHeight = shortSide * 0.046 * settings.logoScale * (brand.logoHeightScale ?? 1);
+  const photoMaxWidth = imageWidth * 0.24;
+  const photoMaxHeight = Math.min(imageHeight * 0.14, baseHeight);
+  const borderHorizontalHeight = Math.max(14, Math.min(baseHeight, Math.max(borderTop, borderBottom) * 0.42 || baseHeight));
+  const borderVerticalHeight = Math.max(14, Math.min(baseHeight, Math.max(borderLeft, borderRight) * 0.42 || baseHeight));
+  const size = isBorderPlacement(placement)
+    ? getLogoSize({
+        brand,
+        logo,
+        maxWidth: placement === "border-left" || placement === "border-right" ? imageHeight * 0.22 : outputWidth * 0.22,
+        maxHeight: placement === "border-left" || placement === "border-right" ? borderVerticalHeight : borderHorizontalHeight,
+      })
+    : getLogoSize({ brand, logo, maxWidth: photoMaxWidth, maxHeight: photoMaxHeight });
+
+  let x = imageX + imageWidth - size.width - inset;
+  let y = imageY + imageHeight - size.height - inset;
+  let rotation = 0;
+
+  switch (placement) {
+    case "photo-top-left":
+      x = imageX + inset;
+      y = imageY + inset;
+      break;
+    case "photo-top-right":
+      x = imageX + imageWidth - size.width - inset;
+      y = imageY + inset;
+      break;
+    case "photo-bottom-left":
+      x = imageX + inset;
+      y = imageY + imageHeight - size.height - inset;
+      break;
+    case "photo-bottom-right":
+      x = imageX + imageWidth - size.width - inset;
+      y = imageY + imageHeight - size.height - inset;
+      break;
+    case "border-top":
+      x = imageX + imageWidth / 2 - size.width / 2;
+      y = borderTop > 0
+        ? borderTop - size.height - (borderTop - size.height) * borderInsetRatio
+        : imageY + inset;
+      break;
+    case "border-bottom":
+      x = imageX + imageWidth / 2 - size.width / 2;
+      y = borderBottom > 0
+        ? imageY + imageHeight + (borderBottom - size.height) * borderInsetRatio
+        : imageY + imageHeight - size.height - inset;
+      break;
+    case "border-left":
+      rotation = -Math.PI / 2;
+      x = borderLeft > 0 ? borderLeft - size.width - (borderLeft - size.width) * borderInsetRatio : imageX + inset;
+      y = imageY + imageHeight / 2 - size.height / 2;
+      break;
+    case "border-right":
+      rotation = Math.PI / 2;
+      x = borderRight > 0
+        ? imageX + imageWidth + (borderRight - size.width) * borderInsetRatio
+        : imageX + imageWidth - size.width - inset;
+      y = imageY + imageHeight / 2 - size.height / 2;
+      break;
+  }
+
+  if (!rotation) {
+    x = clamp(x, 0, outputWidth - size.width);
+    y = clamp(y, 0, outputHeight - size.height);
+  } else {
+    const rotatedWidth = size.height;
+    const rotatedHeight = size.width;
+    const centerX = clamp(x + size.width / 2, rotatedWidth / 2, outputWidth - rotatedWidth / 2);
+    const centerY = clamp(y + size.height / 2, rotatedHeight / 2, outputHeight - rotatedHeight / 2);
+    x = centerX - size.width / 2;
+    y = centerY - size.height / 2;
+  }
+
+  if (logo) {
+    drawBrandLogoTransformed({
+      ctx,
+      logo,
+      brand,
+      color,
+      x,
+      y,
+      width: size.width,
+      height: size.height,
+      rotation,
+    });
+    return;
+  }
+
+  drawLogoFallbackText({
+    ctx,
+    brand,
+    color,
+    x,
+    y,
+    width: size.width,
+    height: size.height,
+    rotation,
+  });
+}
+
 export async function loadImageElement(src: string) {
   const image = new Image();
   image.crossOrigin = "anonymous";
@@ -236,7 +473,7 @@ export function drawWatermarkCanvas({
   const outputWidth = layout.outputWidth;
   const outputHeight = layout.outputHeight;
   const isFilmWatermark = preset.group === "film" && settings.filmWatermark;
-  const hasWatermark = settings.watermark && (preset.showWatermarkBar || isFilmWatermark);
+  const hasWatermark = settings.watermark && settings.watermarkMode === "metadata" && (preset.showWatermarkBar || isFilmWatermark);
   const contentCanvas = settings.cardMode ? document.createElement("canvas") : canvas;
 
   contentCanvas.width = outputWidth;
@@ -263,6 +500,24 @@ export function drawWatermarkCanvas({
     baseHeight
   );
 
+  if (settings.watermarkMode === "logo") {
+    drawLogoOnlyWatermark({
+      ctx,
+      logo,
+      brand,
+      settings,
+      colors,
+      outputWidth,
+      outputHeight,
+      imageX: leftBorder,
+      imageY: topBorder,
+      imageWidth: baseWidth,
+      imageHeight: baseHeight,
+    });
+    applyCardMode({ canvas, contentCanvas, settings });
+    return;
+  }
+
   if (!hasWatermark || bottomBorder <= 0) {
     applyCardMode({ canvas, contentCanvas, settings });
     return;
@@ -278,15 +533,7 @@ export function drawWatermarkCanvas({
   const gap = Math.max(12, outputWidth * 0.018);
   const logoMaxWidth = outputWidth * (isFilmWatermark ? 0.16 : 0.18);
   const logoMaxHeight = Math.max(16, barHeight * (isFilmWatermark ? 0.32 : 0.3)) * (brand.logoHeightScale ?? 1);
-  const logoNaturalRatio =
-    logo && logo.naturalWidth > 0 && logo.naturalHeight > 0
-      ? logo.naturalWidth / logo.naturalHeight
-      : undefined;
-  const logoRatio = brand.logoAspectRatio ?? logoNaturalRatio ?? 4.8;
-  const logoSize =
-    logoMaxHeight * logoRatio > logoMaxWidth
-      ? { width: logoMaxWidth, height: logoMaxWidth / logoRatio }
-      : { width: logoMaxHeight * logoRatio, height: logoMaxHeight };
+  const logoSize = getLogoSize({ brand, logo, maxWidth: logoMaxWidth, maxHeight: logoMaxHeight });
   const logoDrawWidth = logoSize.width;
   const logoDrawHeight = logoSize.height;
   const logoCenterX = outputWidth * (isFilmWatermark ? 0.56 : 0.57);

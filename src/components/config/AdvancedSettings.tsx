@@ -47,6 +47,8 @@ export function AdvancedSettings({
           ))}
         </div>
       </FieldRow>
+      {settings.watermarkMode === "logo" ? null : (
+        <>
       <ModelInput
         enabled={settings.showModel}
         label={t("cameraModel")}
@@ -76,6 +78,8 @@ export function AdvancedSettings({
         onChange={(subtitle) => updateSettings({ subtitle })}
         onEnabledChange={(showSubtitle) => updateSettings({ showSubtitle })}
       />
+        </>
+      )}
     </div>
   );
 }

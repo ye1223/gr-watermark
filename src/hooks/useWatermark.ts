@@ -4,10 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import { getFramePreset } from "@/presets.config";
 import {
   frameStyles,
+  logoColorModes,
+  logoPlacements,
   outputRatios,
   type FrameStyle,
+  type LogoColorMode,
+  type LogoPlacement,
   type OutputRatio,
   type ParsedExif,
+  type WatermarkMode,
+  watermarkModes,
   type WatermarkSettings,
 } from "@/types/watermark";
 
@@ -19,9 +25,14 @@ export const defaultSettings: WatermarkSettings = {
   borderScale: 1,
   frameBorderScale: { top: 1, side: 1, bottom: 1 },
   watermark: true,
+  watermarkMode: "metadata",
   filmWatermark: false,
   cardMode: false,
   cropOffset: { x: 0.5, y: 0.5 },
+  logoPlacement: "photo-bottom-right",
+  logoScale: 1,
+  logoInset: 0.03,
+  logoColorMode: "brand",
   brandId: "ricoh-gr",
   borderTone: "white",
   showModel: true,
@@ -93,6 +104,11 @@ function normalizeStoredSettings(stored: unknown): WatermarkSettings {
     borderScale?: unknown;
     frameBorderScale?: unknown;
     cropOffset?: unknown;
+    watermarkMode?: unknown;
+    logoPlacement?: unknown;
+    logoScale?: unknown;
+    logoInset?: unknown;
+    logoColorMode?: unknown;
   };
 
   return settingKeys.reduce(
@@ -109,6 +125,16 @@ function normalizeStoredSettings(stored: unknown): WatermarkSettings {
             ? normalizeFrameBorderScale(saved.frameBorderScale)
           : key === "cropOffset"
             ? normalizeCropOffset(saved.cropOffset)
+          : key === "watermarkMode"
+            ? normalizeWatermarkMode(saved.watermarkMode)
+          : key === "logoPlacement"
+            ? normalizeLogoPlacement(saved.logoPlacement)
+          : key === "logoScale"
+            ? normalizeLogoScale(saved.logoScale)
+          : key === "logoInset"
+            ? normalizeLogoInset(saved.logoInset)
+          : key === "logoColorMode"
+            ? normalizeLogoColorMode(saved.logoColorMode)
           : saved[key] ?? defaultSettings[key],
     }),
     { ...defaultSettings }
@@ -144,6 +170,36 @@ function normalizeCropOffset(value: unknown): WatermarkSettings["cropOffset"] {
     x: typeof cropOffset.x === "number" ? clamp(cropOffset.x) : defaultSettings.cropOffset.x,
     y: typeof cropOffset.y === "number" ? clamp(cropOffset.y) : defaultSettings.cropOffset.y,
   };
+}
+
+function normalizeWatermarkMode(value: unknown): WatermarkMode {
+  return typeof value === "string" && watermarkModes.includes(value as WatermarkMode)
+    ? value as WatermarkMode
+    : defaultSettings.watermarkMode;
+}
+
+function normalizeLogoPlacement(value: unknown): LogoPlacement {
+  return typeof value === "string" && logoPlacements.includes(value as LogoPlacement)
+    ? value as LogoPlacement
+    : defaultSettings.logoPlacement;
+}
+
+function normalizeLogoScale(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? clamp(value, 0.6, 1.6)
+    : defaultSettings.logoScale;
+}
+
+function normalizeLogoInset(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? clamp(value, 0.01, 0.08)
+    : defaultSettings.logoInset;
+}
+
+function normalizeLogoColorMode(value: unknown): LogoColorMode {
+  return typeof value === "string" && logoColorModes.includes(value as LogoColorMode)
+    ? value as LogoColorMode
+    : defaultSettings.logoColorMode;
 }
 
 export function useWatermark() {

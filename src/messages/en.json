@@ -20,6 +20,15 @@
     "frameStyle": "Frame style",
     "outputRatio": "Output size",
     "watermarkOverlay": "Watermark overlay",
+    "watermarkMode": "Watermark type",
+    "logoCornerPosition": "Photo corners",
+    "logoBorderPosition": "Border center",
+    "logoPosition": "Logo position",
+    "logoPositionPhotoHint": "Photo corners",
+    "logoPositionBorderHint": "Border edges",
+    "logoSize": "Logo size",
+    "logoInset": "Margin",
+    "logoColorMode": "Logo color",
     "cardMode": "Card mode",
     "cardModeHint": "Exports as PNG and keeps a transparent background.",
     "borderHeight": "Border height",
@@ -49,7 +58,25 @@
     "subtitlePlaceholder": "photo by ...",
     "borderTone": "Border color",
     "white": "White",
-    "black": "Black"
+    "black": "Black",
+    "watermarkModes": {
+      "metadata": "Metadata",
+      "logo": "Logo only"
+    },
+    "logoPlacements": {
+      "photo-top-left": "Top left",
+      "photo-top-right": "Top right",
+      "photo-bottom-left": "Bottom left",
+      "photo-bottom-right": "Bottom right",
+      "border-top": "Top",
+      "border-right": "Right",
+      "border-bottom": "Bottom",
+      "border-left": "Left"
+    },
+    "logoColorModes": {
+      "brand": "Brand",
+      "solid": "Solid"
+    }
   },
   "actions": {
     "clear": "Clear",
@@ -57,6 +84,7 @@
     "share": "Share"
   },
   "presets": {
+    "CLEAN": "CLEAN",
     "CLASSIC": "CLASSIC",
     "MINIMAL": "MINIMAL",
     "FRAME": "FRAME",

@@ -6,6 +6,16 @@ export const presetGroups = [
 
 export const framePresets = [
   {
+    id: "CLEAN",
+    name: "CLEAN",
+    group: "basic",
+    canvasRatio: null,
+    border: { top: 0, right: 0, bottom: 0, left: 0 },
+    lockRatio: false,
+    defaultColor: "white",
+    showWatermarkBar: false,
+  },
+  {
     id: "CLASSIC",
     name: "CLASSIC",
     group: "basic",

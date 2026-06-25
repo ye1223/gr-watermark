@@ -15,6 +15,21 @@ export const outputRatios = [
 ] as const;
 export type OutputRatio = (typeof outputRatios)[number];
 export type BorderTone = "white" | "black";
+export const watermarkModes = ["metadata", "logo"] as const;
+export type WatermarkMode = (typeof watermarkModes)[number];
+export const logoPlacements = [
+  "photo-top-left",
+  "photo-top-right",
+  "photo-bottom-left",
+  "photo-bottom-right",
+  "border-top",
+  "border-right",
+  "border-bottom",
+  "border-left",
+] as const;
+export type LogoPlacement = (typeof logoPlacements)[number];
+export const logoColorModes = ["brand", "solid"] as const;
+export type LogoColorMode = (typeof logoColorModes)[number];
 
 export interface WatermarkSettings {
   frameStyle: FrameStyle;
@@ -22,9 +37,14 @@ export interface WatermarkSettings {
   borderScale: number;
   frameBorderScale: { top: number; side: number; bottom: number };
   watermark: boolean;
+  watermarkMode: WatermarkMode;
   filmWatermark: boolean;
   cardMode: boolean;
   cropOffset: { x: number; y: number };
+  logoPlacement: LogoPlacement;
+  logoScale: number;
+  logoInset: number;
+  logoColorMode: LogoColorMode;
   brandId: string;
   borderTone: BorderTone;
   showModel: boolean;
