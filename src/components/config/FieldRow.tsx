@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function FieldRow({
   label,
@@ -23,22 +24,25 @@ export function FieldRow({
           {icon}
           {label}
           {help ? (
-            <span className="group/help relative inline-flex">
-              <button
-                aria-label={help}
-                className="grid size-4 place-items-center rounded-full text-muted-foreground outline-none transition hover:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                title={help}
-                type="button"
-              >
-                <Info className="size-3.5" />
-              </button>
-              <span
-                aria-hidden
-                className="pointer-events-none absolute left-0 top-5 z-20 w-56 rounded-md bg-foreground px-2.5 py-1.5 text-left text-[11px] font-medium normal-case leading-4 text-background opacity-0 shadow-md transition group-hover/help:opacity-100 group-focus-within/help:opacity-100"
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  aria-label={help}
+                  className="grid size-4 place-items-center rounded-full text-muted-foreground outline-none transition hover:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                  type="button"
+                >
+                  <Info className="size-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent
+                align="start"
+                className="z-[100] max-w-60 text-left text-[11px] font-medium normal-case leading-4 shadow-lg"
+                side="left"
+                sideOffset={8}
               >
                 {help}
-              </span>
-            </span>
+              </TooltipContent>
+            </Tooltip>
           ) : null}
         </div>
         {action}

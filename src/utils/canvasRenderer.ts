@@ -28,8 +28,16 @@ function getEffectiveRatio(settings: WatermarkSettings): OutputRatio {
   return preset.lockRatio && preset.canvasRatio ? preset.canvasRatio : settings.outputRatio;
 }
 
-function getRightMetaLineY(primary: boolean, barY: number, barHeight: number) {
-  return barY + barHeight * (primary ? 0.385 : 0.615);
+function getRightMetaLineY(primary: boolean, barY: number, barHeight: number, paired = false) {
+  const ratio = paired
+    ? primary
+      ? 0.425
+      : 0.665
+    : primary
+      ? 0.385
+      : 0.615;
+
+  return barY + barHeight * ratio;
 }
 
 function getBorderRatios(settings: WatermarkSettings) {
@@ -573,8 +581,6 @@ export function drawWatermarkCanvas({
   const titleSize = fitFont(ctx, title || " ", leftWidth, Math.max(13, barHeight * (isFilmWatermark ? 0.235 : 0.22)), 650);
   const smallSize = Math.max(9, barHeight * (isFilmWatermark ? 0.145 : 0.13));
   const rightSecondarySize = Math.max(10, barHeight * (isFilmWatermark ? 0.15 : 0.14));
-  const rightPrimaryY = getRightMetaLineY(true, barY, barHeight);
-  const rightSecondaryY = getRightMetaLineY(false, barY, barHeight);
   const rightSize = fitFont(
     ctx,
     params.join(" "),
@@ -620,6 +626,10 @@ export function drawWatermarkCanvas({
   ctx.stroke();
 
   if (params.length || date) {
+    const hasPairedMeta = Boolean(params.length && date);
+    const rightPrimaryY = getRightMetaLineY(true, barY, barHeight, hasPairedMeta);
+    const rightSecondaryY = getRightMetaLineY(false, barY, barHeight, hasPairedMeta);
+
     ctx.fillStyle = colors.fg;
     ctx.font = `650 ${rightSize}px Inter, Arial, sans-serif`;
     ctx.textAlign = "right";

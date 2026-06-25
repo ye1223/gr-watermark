@@ -57,6 +57,16 @@ export function WatermarkApp() {
     });
   }, []);
 
+  useEffect(() => {
+    if (!brandNotice) return;
+
+    const timer = window.setTimeout(() => {
+      setBrandNotice(null);
+    }, 3600);
+
+    return () => window.clearTimeout(timer);
+  }, [brandNotice]);
+
   const handleFile = useCallback(async (inputFile: File) => {
     setRendering(true);
     try {
