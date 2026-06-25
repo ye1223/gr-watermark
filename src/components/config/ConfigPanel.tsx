@@ -165,6 +165,14 @@ export function ConfigPanel({
                 label={t("cardMode")}
                 onChange={(cardMode) => updateSettings({ cardMode })}
               />
+              <div className="md:hidden">
+                <WatermarkToggle
+                  checked={settings.mobilePreview}
+                  help={t("mobilePreviewHint")}
+                  label={t("mobilePreview")}
+                  onChange={(mobilePreview) => updateSettings({ mobilePreview })}
+                />
+              </div>
             </CardContent>
           </Card>
           ) : (

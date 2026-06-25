@@ -40,6 +40,7 @@ export interface WatermarkSettings {
   watermarkMode: WatermarkMode;
   filmWatermark: boolean;
   cardMode: boolean;
+  mobilePreview: boolean;
   cropOffset: { x: number; y: number };
   logoPlacement: LogoPlacement;
   logoScale: number;

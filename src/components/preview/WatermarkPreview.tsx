@@ -9,7 +9,7 @@ import { getCrop, ratioToNumber } from "@/hooks/useCrop";
 import { cn } from "@/lib/utils";
 import { getFramePreset } from "@/presets.config";
 import type { ImageSource, OutputRatio, WatermarkSettings } from "@/types/watermark";
-import { preloadCanvasRenderer } from "@/utils/preload";
+import { preloadCanvasRenderer, preloadExifParser } from "@/utils/preload";
 import { UploadZone } from "../upload/UploadZone";
 
 const cropHintStorageKey = "gr-watermark-crop-hint-read";
@@ -256,6 +256,10 @@ export function WatermarkPreview({
 
   const isBusy = rendering || localRendering;
   const brand = getBrand(settings.brandId);
+  const prepareUpload = useCallback(() => {
+    void preloadCanvasRenderer();
+    void preloadExifParser();
+  }, []);
 
   return (
     <section className="grid-bg flex min-h-[520px] flex-1 flex-col">
@@ -281,7 +285,7 @@ export function WatermarkPreview({
           </div>
         ) : null}
         {!imageSource ? (
-          <UploadZone compact onFile={onFile} onPrepare={preloadCanvasRenderer} />
+          <UploadZone compact onFile={onFile} onPrepare={prepareUpload} />
         ) : (
           <div
             ref={stageRef}

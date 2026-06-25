@@ -32,6 +32,8 @@
     "logoColorMode": "Logo color",
     "cardMode": "Card mode",
     "cardModeHint": "Exports as PNG and keeps a transparent background.",
+    "mobilePreview": "Mobile preview",
+    "mobilePreviewHint": "Shows a draggable, resizable floating preview while editing on mobile.",
     "borderHeight": "Border height",
     "watermarkBarHeight": "Watermark bar height",
     "frameBorderWidth": "Frame border width",

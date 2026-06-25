@@ -28,6 +28,7 @@ export const defaultSettings: WatermarkSettings = {
   watermarkMode: "metadata",
   filmWatermark: false,
   cardMode: false,
+  mobilePreview: true,
   cropOffset: { x: 0.5, y: 0.5 },
   logoPlacement: "photo-bottom-right",
   logoScale: 1,

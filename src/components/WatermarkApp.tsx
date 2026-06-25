@@ -52,6 +52,7 @@ export function WatermarkApp() {
   const previewSectionRef = useRef<HTMLDivElement>(null);
   const miniPreviewTimerRef = useRef<number | null>(null);
   const miniPreviewInteractingRef = useRef(false);
+  const uploadTokenRef = useRef(0);
   const [imageSource, setImageSource] = useState<ImageSource | null>(null);
   const [rendering, setRendering] = useState(false);
   const [brandNotice, setBrandNotice] = useState<string | null>(null);
@@ -88,6 +89,15 @@ export function WatermarkApp() {
     setMiniPreviewVisible(false);
   }, [imageSource]);
 
+  useEffect(() => {
+    if (settings.mobilePreview) return;
+    if (miniPreviewTimerRef.current !== null) {
+      window.clearTimeout(miniPreviewTimerRef.current);
+      miniPreviewTimerRef.current = null;
+    }
+    setMiniPreviewVisible(false);
+  }, [settings.mobilePreview]);
+
   const clearMiniPreviewTimer = useCallback(() => {
     if (miniPreviewTimerRef.current !== null) {
       window.clearTimeout(miniPreviewTimerRef.current);
@@ -95,8 +105,9 @@ export function WatermarkApp() {
     }
   }, []);
 
-  const scheduleMiniPreviewHide = useCallback(() => {
+  const scheduleMiniPreviewHide = useCallback((force = false) => {
     if (!imageSource) return;
+    if (!force && !settings.mobilePreview) return;
     if (window.matchMedia("(min-width: 768px)").matches) return;
     if (miniPreviewInteractingRef.current) return;
 
@@ -105,16 +116,17 @@ export function WatermarkApp() {
       setMiniPreviewVisible(false);
       miniPreviewTimerRef.current = null;
     }, miniPreviewHideDelay);
-  }, [clearMiniPreviewTimer, imageSource]);
+  }, [clearMiniPreviewTimer, imageSource, settings.mobilePreview]);
 
-  const revealMiniPreview = useCallback(() => {
+  const revealMiniPreview = useCallback((force = false) => {
     if (!imageSource) return;
+    if (!force && !settings.mobilePreview) return;
     if (window.matchMedia("(min-width: 768px)").matches) return;
 
     clearMiniPreviewTimer();
     setMiniPreviewVisible(true);
-    scheduleMiniPreviewHide();
-  }, [clearMiniPreviewTimer, imageSource, scheduleMiniPreviewHide]);
+    scheduleMiniPreviewHide(force);
+  }, [clearMiniPreviewTimer, imageSource, scheduleMiniPreviewHide, settings.mobilePreview]);
 
   const handleMiniPreviewInteractionChange = useCallback((interacting: boolean) => {
     miniPreviewInteractingRef.current = interacting;
@@ -131,14 +143,19 @@ export function WatermarkApp() {
   const updateSettingsWithPreview = useCallback(
     (patch: Parameters<typeof updateSettings>[0]) => {
       updateSettings(patch);
-      revealMiniPreview();
+      if (patch.mobilePreview === false) {
+        clearMiniPreviewTimer();
+        setMiniPreviewVisible(false);
+        return;
+      }
+      revealMiniPreview(patch.mobilePreview === true);
     },
-    [revealMiniPreview, updateSettings]
+    [clearMiniPreviewTimer, revealMiniPreview, updateSettings]
   );
 
   const resetSettingsWithPreview = useCallback(() => {
     resetSettings();
-    revealMiniPreview();
+    revealMiniPreview(true);
   }, [resetSettings, revealMiniPreview]);
 
   const scrollToPreview = useCallback(() => {
@@ -150,27 +167,28 @@ export function WatermarkApp() {
   }, []);
 
   const handleFile = useCallback(async (inputFile: File) => {
+    const uploadToken = uploadTokenRef.current + 1;
+    uploadTokenRef.current = uploadToken;
     setRendering(true);
     try {
       void preloadCanvasRenderer();
+      void preloadExifParser();
       const exifPromise = parseExif(inputFile);
       const normalized = await normalizeImageFile(inputFile);
       const url = URL.createObjectURL(normalized);
-      const [{ width, height }, exif] = await Promise.all([getImageSize(url), exifPromise]);
-      const detectedBrand = detectBrandFromCamera(exif.make, exif.model);
-      const brand = detectedBrand ?? getBrand("ricoh-gr");
+      const { width, height } = await getImageSize(url);
+
+      if (uploadToken !== uploadTokenRef.current) {
+        URL.revokeObjectURL(url);
+        return;
+      }
+
       const preset = getFramePreset(settings.frameStyle);
       const outputRatio = preset.lockRatio && preset.canvasRatio
         ? preset.canvasRatio
         : getNearestOutputRatio(width, height);
 
-      setBrandNotice(detectedBrand ? null : t("brandFallbackHint"));
-      updateSettings({ outputRatio, brandId: brand.id });
-      applyExif({
-        ...exif,
-        model: exif.model || brand.defaultModel,
-      });
-
+      updateSettings({ outputRatio });
       setImageSource((current) => {
         if (current) {
           URL.revokeObjectURL(current.url);
@@ -185,8 +203,25 @@ export function WatermarkApp() {
           height,
         };
       });
-    } finally {
       setRendering(false);
+
+      void exifPromise.then((exif) => {
+        if (uploadToken !== uploadTokenRef.current) return;
+
+        const detectedBrand = detectBrandFromCamera(exif.make, exif.model);
+        const brand = detectedBrand ?? getBrand("ricoh-gr");
+
+        setBrandNotice(detectedBrand ? null : t("brandFallbackHint"));
+        updateSettings({ brandId: brand.id });
+        applyExif({
+          ...exif,
+          model: exif.model || brand.defaultModel,
+        });
+      });
+    } finally {
+      if (uploadToken === uploadTokenRef.current) {
+        setRendering(false);
+      }
     }
   }, [applyExif, settings.frameStyle, t, updateSettings]);
 
@@ -204,6 +239,7 @@ export function WatermarkApp() {
   }, [handleFile]);
 
   function clearImage() {
+    uploadTokenRef.current += 1;
     clearExif();
     setBrandNotice(null);
     setImageSource((current) => {
