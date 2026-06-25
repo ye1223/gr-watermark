@@ -114,10 +114,12 @@ function applyCardMode({
   canvas,
   contentCanvas,
   settings,
+  neutralShadow = false,
 }: {
   canvas: HTMLCanvasElement;
   contentCanvas: HTMLCanvasElement;
   settings: WatermarkSettings;
+  neutralShadow?: boolean;
 }) {
   if (!settings.cardMode) return;
 
@@ -135,11 +137,15 @@ function applyCardMode({
   const outerWidth = contentWidth + padX * 2;
   const outerHeight = contentHeight + padTop + padBottom;
   const colors = toneColors(settings.borderTone);
-  const shadowStrong =
-    settings.borderTone === "black" ? "rgba(0,0,0,0.58)" : "rgba(15,23,42,0.24)";
-  const shadowSoft =
-    settings.borderTone === "black" ? "rgba(0,0,0,0.36)" : "rgba(15,23,42,0.12)";
-  const stroke = settings.borderTone === "black" ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.12)";
+  const shadowStrong = neutralShadow
+    ? "rgba(15,23,42,0.28)"
+    : settings.borderTone === "black" ? "rgba(0,0,0,0.58)" : "rgba(15,23,42,0.24)";
+  const shadowSoft = neutralShadow
+    ? "rgba(15,23,42,0.14)"
+    : settings.borderTone === "black" ? "rgba(0,0,0,0.36)" : "rgba(15,23,42,0.12)";
+  const stroke = neutralShadow
+    ? "rgba(15,23,42,0.12)"
+    : settings.borderTone === "black" ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.12)";
 
   canvas.width = outerWidth;
   canvas.height = outerHeight;
@@ -348,7 +354,7 @@ function drawLogoOnlyWatermark({
   const borderRight = outputWidth - imageX - imageWidth;
   const borderBottom = outputHeight - imageY - imageHeight;
   const borderInsetRatio = clamp(settings.logoInset, 0.01, 0.08) / 0.08;
-  const baseHeight = shortSide * 0.046 * settings.logoScale * (brand.logoHeightScale ?? 1);
+  const baseHeight = shortSide * 0.046 * settings.logoScale * (brand.logoOnlyScale ?? 1);
   const photoMaxWidth = imageWidth * 0.24;
   const photoMaxHeight = Math.min(imageHeight * 0.14, baseHeight);
   const borderHorizontalHeight = Math.max(14, Math.min(baseHeight, Math.max(borderTop, borderBottom) * 0.42 || baseHeight));
@@ -486,6 +492,7 @@ export function drawWatermarkCanvas({
   const topBorder = layout.imageY;
   const leftBorder = layout.imageX;
   const bottomBorder = layout.outputHeight - layout.imageY - layout.imageHeight;
+  const hasVisibleBorder = topBorder + leftBorder + bottomBorder + (layout.outputWidth - layout.imageX - layout.imageWidth) > 1;
   const outputWidth = layout.outputWidth;
   const outputHeight = layout.outputHeight;
   const renderScale = maxCanvasSide
@@ -534,12 +541,12 @@ export function drawWatermarkCanvas({
       imageWidth: baseWidth,
       imageHeight: baseHeight,
     });
-    applyCardMode({ canvas, contentCanvas, settings });
+    applyCardMode({ canvas, contentCanvas, settings, neutralShadow: !hasVisibleBorder });
     return;
   }
 
   if (!hasWatermark || bottomBorder <= 0) {
-    applyCardMode({ canvas, contentCanvas, settings });
+    applyCardMode({ canvas, contentCanvas, settings, neutralShadow: !hasVisibleBorder });
     return;
   }
 
@@ -643,7 +650,7 @@ export function drawWatermarkCanvas({
     }
   }
 
-  applyCardMode({ canvas, contentCanvas, settings });
+  applyCardMode({ canvas, contentCanvas, settings, neutralShadow: !hasVisibleBorder });
 }
 
 export async function renderWatermarkBlob({

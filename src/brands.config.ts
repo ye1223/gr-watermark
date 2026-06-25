@@ -5,6 +5,7 @@ export interface BrandConfig {
   logo: string;
   logoAspectRatio?: number;
   logoHeightScale?: number;
+  logoOnlyScale?: number;
   logoTone?: "original" | "foreground";
   accentColor: string;
   borderDefault: "white" | "black";
@@ -30,6 +31,7 @@ export const brands: BrandConfig[] = [
     logo: "/gr-watermark/assets/logos/apple.svg",
     logoAspectRatio: 814 / 1000,
     logoHeightScale: 1.18,
+    logoOnlyScale: 1.5,
     logoTone: "foreground",
     accentColor: "#111111",
     borderDefault: "white",
