@@ -2,9 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ConfigPanel } from "@/components/config/ConfigPanel";
 import { Header } from "@/components/layout/Header";
+import { MobileFloatingPreview } from "@/components/preview/MobileFloatingPreview";
 import { WatermarkPreview } from "@/components/preview/WatermarkPreview";
 import { detectBrandFromCamera, getBrand } from "@/brands.config";
 import { getNearestOutputRatio } from "@/hooks/useCrop";
@@ -18,6 +19,8 @@ const ActionButtons = dynamic(
   () => import("./actions/ActionButtons").then((mod) => mod.ActionButtons),
   { ssr: false }
 );
+
+const miniPreviewHideDelay = 2800;
 
 async function getImageSize(url: string) {
   const image = new Image();
@@ -46,9 +49,13 @@ function getPastedImageFile(event: ClipboardEvent) {
 export function WatermarkApp() {
   const t = useTranslations("preview");
   const { settings, updateSettings, applyExif, clearExif, resetSettings } = useWatermark();
+  const previewSectionRef = useRef<HTMLDivElement>(null);
+  const miniPreviewTimerRef = useRef<number | null>(null);
+  const miniPreviewInteractingRef = useRef(false);
   const [imageSource, setImageSource] = useState<ImageSource | null>(null);
   const [rendering, setRendering] = useState(false);
   const [brandNotice, setBrandNotice] = useState<string | null>(null);
+  const [miniPreviewVisible, setMiniPreviewVisible] = useState(false);
 
   useEffect(() => {
     return scheduleIdleTask(() => {
@@ -56,6 +63,15 @@ export function WatermarkApp() {
       void preloadExifParser();
     });
   }, []);
+
+  useEffect(
+    () => () => {
+      if (miniPreviewTimerRef.current !== null) {
+        window.clearTimeout(miniPreviewTimerRef.current);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (!brandNotice) return;
@@ -66,6 +82,72 @@ export function WatermarkApp() {
 
     return () => window.clearTimeout(timer);
   }, [brandNotice]);
+
+  useEffect(() => {
+    if (imageSource) return;
+    setMiniPreviewVisible(false);
+  }, [imageSource]);
+
+  const clearMiniPreviewTimer = useCallback(() => {
+    if (miniPreviewTimerRef.current !== null) {
+      window.clearTimeout(miniPreviewTimerRef.current);
+      miniPreviewTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleMiniPreviewHide = useCallback(() => {
+    if (!imageSource) return;
+    if (window.matchMedia("(min-width: 768px)").matches) return;
+    if (miniPreviewInteractingRef.current) return;
+
+    clearMiniPreviewTimer();
+    miniPreviewTimerRef.current = window.setTimeout(() => {
+      setMiniPreviewVisible(false);
+      miniPreviewTimerRef.current = null;
+    }, miniPreviewHideDelay);
+  }, [clearMiniPreviewTimer, imageSource]);
+
+  const revealMiniPreview = useCallback(() => {
+    if (!imageSource) return;
+    if (window.matchMedia("(min-width: 768px)").matches) return;
+
+    clearMiniPreviewTimer();
+    setMiniPreviewVisible(true);
+    scheduleMiniPreviewHide();
+  }, [clearMiniPreviewTimer, imageSource, scheduleMiniPreviewHide]);
+
+  const handleMiniPreviewInteractionChange = useCallback((interacting: boolean) => {
+    miniPreviewInteractingRef.current = interacting;
+
+    if (interacting) {
+      clearMiniPreviewTimer();
+      setMiniPreviewVisible(true);
+      return;
+    }
+
+    scheduleMiniPreviewHide();
+  }, [clearMiniPreviewTimer, scheduleMiniPreviewHide]);
+
+  const updateSettingsWithPreview = useCallback(
+    (patch: Parameters<typeof updateSettings>[0]) => {
+      updateSettings(patch);
+      revealMiniPreview();
+    },
+    [revealMiniPreview, updateSettings]
+  );
+
+  const resetSettingsWithPreview = useCallback(() => {
+    resetSettings();
+    revealMiniPreview();
+  }, [resetSettings, revealMiniPreview]);
+
+  const scrollToPreview = useCallback(() => {
+    setMiniPreviewVisible(false);
+    previewSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, []);
 
   const handleFile = useCallback(async (inputFile: File) => {
     setRendering(true);
@@ -137,19 +219,26 @@ export function WatermarkApp() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main className="mx-auto grid min-h-[calc(100vh-3.5rem)] w-full max-w-[1800px] gap-4 p-3 md:grid-cols-[minmax(0,1fr)_380px] md:p-4">
-        <div className="relative flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div ref={previewSectionRef} className="relative flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
           <WatermarkPreview
             imageSource={imageSource}
             rendering={rendering}
             brandNotice={brandNotice}
             settings={settings}
-            updateSettings={updateSettings}
+            updateSettings={updateSettingsWithPreview}
             onFile={handleFile}
           />
           <ActionButtons imageSource={imageSource} settings={settings} onClear={clearImage} />
         </div>
-        <ConfigPanel settings={settings} updateSettings={updateSettings} onReset={resetSettings} />
+        <ConfigPanel settings={settings} updateSettings={updateSettingsWithPreview} onReset={resetSettingsWithPreview} />
       </main>
+      <MobileFloatingPreview
+        imageSource={imageSource}
+        settings={settings}
+        visible={miniPreviewVisible}
+        onInteractionChange={handleMiniPreviewInteractionChange}
+        onOpenPreview={scrollToPreview}
+      />
     </div>
   );
 }
