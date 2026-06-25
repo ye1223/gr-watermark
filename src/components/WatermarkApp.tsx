@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ConfigPanel } from "@/components/config/ConfigPanel";
+import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { MobileFloatingPreview } from "@/components/preview/MobileFloatingPreview";
 import { WatermarkPreview } from "@/components/preview/WatermarkPreview";
@@ -252,9 +253,9 @@ export function WatermarkApp() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Header />
-      <main className="mx-auto grid min-h-[calc(100vh-3.5rem)] w-full max-w-[1800px] gap-4 p-3 md:grid-cols-[minmax(0,1fr)_380px] md:p-4">
+      <main className="mx-auto grid min-h-[calc(100vh-6.25rem)] w-full max-w-[1800px] flex-1 gap-4 p-3 md:grid-cols-[minmax(0,1fr)_380px] md:p-4">
         <div ref={previewSectionRef} className="relative flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
           <WatermarkPreview
             imageSource={imageSource}
@@ -275,6 +276,7 @@ export function WatermarkApp() {
         onInteractionChange={handleMiniPreviewInteractionChange}
         onOpenPreview={scrollToPreview}
       />
+      <Footer />
     </div>
   );
 }

@@ -5,6 +5,10 @@
     "theme": "Theme",
     "language": "Language"
   },
+  "footer": {
+    "copyright": "© 2026 {name}. Released under the MIT License.",
+    "github": "GitHub"
+  },
   "upload": {
     "hint": "Upload photo",
     "formats": "Drop, paste, or choose JPG / PNG / WEBP / HEIC"

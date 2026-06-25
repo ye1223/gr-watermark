@@ -5,6 +5,10 @@
     "theme": "主题",
     "language": "语言"
   },
+  "footer": {
+    "copyright": "© 2026 {name}. MIT 开源许可。",
+    "github": "GitHub 主页"
+  },
   "upload": {
     "hint": "上传照片",
     "formats": "拖拽、粘贴或点击选择 JPG / PNG / WEBP / HEIC"
