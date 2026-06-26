@@ -11,7 +11,7 @@
     }
   ],
   "vars": {
-    "ALLOWED_ORIGINS": "https://gr-watermark.vercel.app,https://gr-watermark-bi797dth9-levyys-projects.vercel.app"
+    "ALLOWED_ORIGINS": "https://gr-watermark.vercel.app,https://gr-watermark-levyys-projects.vercel.app,https://gr-watermark-git-main-levyys-projects.vercel.app"
   },
   "d1_databases": [
     {
