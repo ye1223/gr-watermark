@@ -29,3 +29,11 @@ npm run build
 ```
 
 Stop the dev server before running `npm run build`, because Next.js and next-pwa both write build artifacts under `.next` during compilation.
+
+## Analytics
+
+Analytics is optional and disabled by default. Set `NEXT_PUBLIC_TRACK_ENDPOINT` to a lightweight collect API, for example a Cloudflare Worker at `https://analytics.example.com/collect`.
+
+The frontend only sends small product events such as page views, upload success, download success, preset changes, card mode changes, language, and device type. It does not send images, filenames, or EXIF details.
+
+`workers/analytics-api.js` contains a minimal Cloudflare Worker collector, and `workers/schema.sql` contains the matching D1 table schema.

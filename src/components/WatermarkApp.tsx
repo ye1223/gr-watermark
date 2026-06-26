@@ -14,6 +14,7 @@ import { normalizeImageFile, parseExif } from "@/hooks/useExif";
 import { useWatermark } from "@/hooks/useWatermark";
 import { getFramePreset } from "@/presets.config";
 import type { ImageSource } from "@/types/watermark";
+import { trackEvent, trackPageViewOnce } from "@/lib/tracker";
 import { preloadCanvasRenderer, preloadExifParser, scheduleIdleTask } from "@/utils/preload";
 
 const ActionButtons = dynamic(
@@ -60,6 +61,8 @@ export function WatermarkApp() {
   const [miniPreviewVisible, setMiniPreviewVisible] = useState(false);
 
   useEffect(() => {
+    trackPageViewOnce();
+
     return scheduleIdleTask(() => {
       void preloadCanvasRenderer();
       void preloadExifParser();
@@ -167,7 +170,7 @@ export function WatermarkApp() {
     });
   }, []);
 
-  const handleFile = useCallback(async (inputFile: File) => {
+  const handleFile = useCallback(async (inputFile: File, source: "picker" | "drop" | "paste" = "picker") => {
     const uploadToken = uploadTokenRef.current + 1;
     uploadTokenRef.current = uploadToken;
     setRendering(true);
@@ -204,6 +207,12 @@ export function WatermarkApp() {
           height,
         };
       });
+      trackEvent("upload_success", {
+        source,
+        frameStyle: settings.frameStyle,
+        outputRatio,
+        cardMode: settings.cardMode,
+      });
       setRendering(false);
 
       void exifPromise.then((exif) => {
@@ -224,7 +233,7 @@ export function WatermarkApp() {
         setRendering(false);
       }
     }
-  }, [applyExif, settings.frameStyle, t, updateSettings]);
+  }, [applyExif, settings.cardMode, settings.frameStyle, t, updateSettings]);
 
   useEffect(() => {
     function handlePaste(event: ClipboardEvent) {
@@ -232,7 +241,7 @@ export function WatermarkApp() {
       if (!file) return;
 
       event.preventDefault();
-      void handleFile(file);
+      void handleFile(file, "paste");
     }
 
     window.addEventListener("paste", handlePaste);

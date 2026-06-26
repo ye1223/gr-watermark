@@ -63,7 +63,7 @@ export function WatermarkPreview({
   updateSettings: (patch: Partial<WatermarkSettings>) => void;
   rendering: boolean;
   brandNotice?: string | null;
-  onFile: (file: File) => void;
+  onFile: (file: File, source: "picker" | "drop") => void;
 }) {
   const t = useTranslations("preview");
   const stageRef = useRef<HTMLDivElement>(null);

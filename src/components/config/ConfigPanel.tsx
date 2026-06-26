@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/tracker";
 import { getFramePreset } from "@/presets.config";
 import type { WatermarkSettings } from "@/types/watermark";
 import { scheduleIdleTask } from "@/utils/preload";
@@ -114,7 +115,10 @@ export function ConfigPanel({
             <CardContent className="space-y-4">
               <FrameStyleSelect
                 value={settings.frameStyle}
-                onChange={(frameStyle) => updateSettings({ frameStyle })}
+                onChange={(frameStyle) => {
+                  trackEvent("preset_change", { frameStyle });
+                  updateSettings({ frameStyle });
+                }}
               />
               <RatioSelect
                 disabled={selectedPreset.lockRatio}
@@ -163,7 +167,10 @@ export function ConfigPanel({
                 checked={settings.cardMode}
                 help={t("cardModeHint")}
                 label={t("cardMode")}
-                onChange={(cardMode) => updateSettings({ cardMode })}
+                onChange={(cardMode) => {
+                  trackEvent("card_mode_change", { cardMode });
+                  updateSettings({ cardMode });
+                }}
               />
               <div className="md:hidden">
                 <WatermarkToggle

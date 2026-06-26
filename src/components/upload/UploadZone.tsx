@@ -10,7 +10,7 @@ export function UploadZone({
   onPrepare,
   compact = false,
 }: {
-  onFile: (file: File) => void;
+  onFile: (file: File, source: "picker" | "drop") => void;
   onPrepare?: () => void;
   compact?: boolean;
 }) {
@@ -21,7 +21,7 @@ export function UploadZone({
   function pickFile(event: ChangeEvent<HTMLInputElement>) {
     onPrepare?.();
     const file = event.target.files?.[0];
-    if (file) onFile(file);
+    if (file) onFile(file, "picker");
     event.currentTarget.value = "";
   }
 
@@ -30,7 +30,7 @@ export function UploadZone({
     onPrepare?.();
     setDragging(false);
     const file = event.dataTransfer.files?.[0];
-    if (file) onFile(file);
+    if (file) onFile(file, "drop");
   }
 
   return (

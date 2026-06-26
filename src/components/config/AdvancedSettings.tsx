@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/tracker";
 import type { WatermarkSettings } from "@/types/watermark";
 import { BrandLogoSelect } from "./BrandLogoSelect";
 import { DatetimeInput } from "./DatetimeInput";
@@ -24,7 +25,10 @@ export function AdvancedSettings({
       <BrandLogoSelect
         label={t("brandLogo")}
         value={settings.brandId}
-        onChange={(brandId) => updateSettings({ brandId })}
+        onChange={(brandId) => {
+          trackEvent("brand_change", { brandId });
+          updateSettings({ brandId });
+        }}
       />
       <FieldRow label={t("borderTone")}>
         <div className="grid grid-cols-2 gap-2">

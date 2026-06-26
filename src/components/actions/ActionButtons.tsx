@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { getBrand } from "@/brands.config";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/tracker";
 import type { ImageSource, WatermarkSettings } from "@/types/watermark";
 
 export function ActionButtons({
@@ -53,6 +54,13 @@ export function ActionButtons({
       }`;
       link.click();
       URL.revokeObjectURL(href);
+      trackEvent("download_success", {
+        frameStyle: settings.frameStyle,
+        outputRatio: settings.outputRatio,
+        cardMode: settings.cardMode,
+        watermarkMode: settings.watermarkMode,
+        brandId: settings.brandId,
+      });
     } finally {
       setBusy(null);
     }
@@ -68,6 +76,13 @@ export function ActionButtons({
       });
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: "GR印迹" });
+        trackEvent("share_success", {
+          frameStyle: settings.frameStyle,
+          outputRatio: settings.outputRatio,
+          cardMode: settings.cardMode,
+          watermarkMode: settings.watermarkMode,
+          brandId: settings.brandId,
+        });
       }
     } finally {
       setBusy(null);

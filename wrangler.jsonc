@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "gr-watermark-analytics",
+  "main": "workers/analytics-api.js",
+  "compatibility_date": "2026-06-26",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "to-ols.xyz/gr-watermark-analytics/*",
+      "zone_name": "to-ols.xyz"
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGINS": "https://gr-watermark.vercel.app,https://gr-watermark-bi797dth9-levyys-projects.vercel.app"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "gr_watermark_analytics",
+      "database_id": "647e82b8-7c2f-44ff-acc9-ffff4496c4a5"
+    }
+  ]
+}
