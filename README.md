@@ -32,8 +32,19 @@ Stop the dev server before running `npm run build`, because Next.js and next-pwa
 
 ## Analytics
 
-Analytics is optional and disabled by default. Set `NEXT_PUBLIC_TRACK_ENDPOINT` to a lightweight collect API, for example a Cloudflare Worker at `https://analytics.example.com/collect`.
+Analytics is optional and disabled by default. Set `NEXT_PUBLIC_TRACK_ENDPOINT` to a lightweight collect API, for example the Cloudflare Worker endpoint currently used by production:
 
-The frontend only sends small product events such as page views, upload success, download success, preset changes, card mode changes, language, and device type. It does not send images, filenames, or EXIF details.
+```bash
+NEXT_PUBLIC_TRACK_ENDPOINT=https://to-ols.xyz/gr-watermark-analytics/collect
+NEXT_PUBLIC_TRACK_SITE_ID=gr-watermark
+```
 
-`workers/analytics-api.js` contains a minimal Cloudflare Worker collector, and `workers/schema.sql` contains the matching D1 table schema.
+Collection strategy:
+
+- The tracker is failure-silent: missing endpoint, offline mode, blocked requests, or API errors must not affect upload, rendering, sharing, or download.
+- The frontend only sends small product events: `page_view`, `upload_success`, `download_success`, `share_success`, `preset_change`, `card_mode_change`, and `brand_change`.
+- Event payloads may include route path, locale, device type, selected preset, card mode, watermark mode, brand id, upload source, and Cloudflare country code.
+- The tracker must not send images, generated files, filenames, raw EXIF values, camera serial data, subtitles, user-entered metadata text, IP addresses from the browser, or persistent user identifiers.
+- The collector accepts only allowlisted event names, trims string fields, caps request body size, and stores events in Cloudflare D1.
+
+`workers/analytics-api.js` contains the Cloudflare Worker collector, `workers/schema.sql` contains the matching D1 table schema, and `wrangler.jsonc` defines the Worker route and D1 binding.
